@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Young Talents Hochschulkarte · d&b audiotechnik</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%235B21B6'/%3E%3Cpath d='M16 4C10.48 4 6 8.48 6 14c0 7 10 18 10 18S26 21 26 14c0-5.52-4.48-10-10-10z' fill='white'/%3E%3Ccircle cx='16' cy='14' r='3.5' fill='%235B21B6'/%3E%3C/svg%3E"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
+  <style>
+    :root {
+      --p:      #5B21B6;
+      --p-h:    #4C1D95;
+      --p-l:    #7C3AED;
+      --p-pale: #EDE9FE;
+      --p-b:    #DDD6FE;
+
+      --n0:  #FFFFFF;
+      --n50: #FAFAFA;
+      --n100:#F4F4F5;
+      --n200:#E4E4E7;
+      --n300:#D1D1D6;
+      --n400:#A1A1AA;
+      --n500:#71717A;
+      --n700:#3F3F46;
+      --n900:#18181B;
+
+      --ok: #059669; --ok-bg:#ECFDF5; --ok-b:#A7F3D0;
+      --danger:#DC2626; --danger-bg:#FEF2F2;
+
+      --sh-sm: 0 2px 8px rgba(0,0,0,0.08);
+      --sh-md: 0 6px 24px rgba(0,0,0,0.10);
+      --sh-lg: 0 24px 64px rgba(0,0,0,0.14);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--n100); color: var(--n900);
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    header {
+      background: var(--n0); border-bottom: 3px solid var(--p);
+      padding: 0 24px; height: 76px;
+      display: flex; align-items: center; gap: 20px;
+      flex-shrink: 0; z-index: 10; box-shadow: var(--sh-sm);
+    }
+    .logo-wrap { display: flex; align-items: center; padding-right: 22px; border-right: 1px solid var(--n200); flex-shrink: 0; }
+    .logo-svg  { display: block; height: 50px; width: auto; }
+    .hd-tag    { display: flex; flex-direction: column; gap: 2px; padding-left: 4px; }
+    .hd-tag h1 { font-size: 12px; font-weight: 700; color: var(--n900); letter-spacing: -0.1px; }
+    .hd-tag p  { font-size: 10px; color: var(--n400); }
+    .hd-space  { flex: 1; }
+    .hd-right  { display: flex; align-items: center; gap: 10px; }
+
+    #count-badge {
+      font-size: 11px; font-weight: 700; color: var(--p-l);
+      background: var(--p-pale); border: 1.5px solid var(--p-b);
+      padding: 5px 12px; border-radius: 20px; white-space: nowrap;
+    }
+
+    .btn { font-family: inherit; cursor: pointer; transition: all 0.15s; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-ghost {
+      font-size: 12px; padding: 8px 14px;
+      border: 1.5px solid var(--n200); background: var(--n0); color: var(--n500);
+    }
+    .btn-ghost:hover  { border-color: var(--p-b); color: var(--p); background: var(--p-pale); }
+    .btn-ghost.active { border-color: var(--p); color: var(--p); background: var(--p-pale); }
+    .btn-solid {
+      font-size: 13px; padding: 9px 18px;
+      border: none; background: var(--p); color: var(--n0);
+    }
+    .btn-solid:hover  { background: var(--p-h); box-shadow: 0 4px 14px rgba(91,33,182,0.3); transform: translateY(-1px); }
+    .btn-solid:active { transform: translateY(0); box-shadow: none; }
+    .btn-icon {
+      width: 36px; height: 36px; padding: 0; justify-content: center;
+      border: 1.5px solid var(--n200); background: var(--n0); color: var(--n500); font-size: 16px;
+    }
+    .btn-icon:hover { background: var(--n100); color: var(--n900); }
+
+    .settings-menu { position: relative; }
+    .settings-dd {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--n0); border: 1px solid var(--n200); border-radius: 10px;
+      box-shadow: var(--sh-md); z-index: 300; min-width: 165px; padding: 4px; display: none;
+    }
+    .settings-dd.open { display: block; }
+    .s-item {
+      padding: 9px 12px; font-size: 12px; font-weight: 500; color: var(--n700);
+      display: flex; align-items: center; gap: 8px;
+      border: none; background: none; width: 100%; text-align: left; cursor: pointer;
+      border-radius: 6px; transition: all 0.1s;
+    }
+    .s-item:hover { background: var(--n100); color: var(--n900); }
+    .s-divider    { height: 1px; background: var(--n100); margin: 4px 0; }
+
+    /* ── MAP BODY ───────────────────────────────────── */
+    #app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+    #map { flex: 1; z-index: 0; }
+
+    /* Search (top-center) */
+    .search-wrap {
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 50; width: 340px;
+    }
+    .search-inner {
+      background: var(--n0); border-radius: 10px;
+      box-shadow: var(--sh-md); border: 1px solid var(--n200);
+      display: flex; align-items: center; gap: 8px; padding: 0 14px; height: 42px;
+    }
+    .search-inner svg { color: var(--n400); flex-shrink: 0; }
+    .search-inner input {
+      flex: 1; border: none; outline: none; font-family: inherit;
+      font-size: 13px; font-weight: 500; color: var(--n900); background: transparent;
+    }
+    .search-inner input::placeholder { color: var(--n300); font-weight: 400; }
+    .search-clear {
+      background: none; border: none; cursor: pointer; color: var(--n400);
+      font-size: 14px; line-height: 1; padding: 0; display: none;
+    }
+    .search-clear.visible { display: block; }
+    .search-clear:hover { color: var(--n700); }
+
+    /* ── FILTER PANEL ───────────────────────────────── */
+    #filter-panel {
+      position: absolute; top: 16px; left: 16px; z-index: 50; width: 284px;
+      background: var(--n0); border-radius: 14px; box-shadow: var(--sh-md);
+      border: 1px solid var(--n200); overflow: hidden; max-height: calc(100vh - 120px); display:flex; flex-direction:column;
+    }
+    .fp-hd {
+      padding: 12px 16px; border-bottom: 1px solid var(--n100);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--n0); flex-shrink:0;
+    }
+    .fp-lbl    { font-size: 10px; font-weight: 800; color: var(--n400); text-transform: uppercase; letter-spacing: 0.9px; }
+    .fp-reset  { font-size: 11px; font-weight: 700; color: var(--p); background: var(--p-pale); border: 1px solid var(--p-b); border-radius: 20px; padding: 3px 10px; cursor: pointer; display: none; transition: all 0.12s; }
+    .fp-reset.on { display: block; }
+    .fp-reset:hover { background: var(--p); color: var(--n0); border-color: var(--p); }
+    .fp-body   { overflow-y: auto; flex:1; }
+    .fp-sec    { padding: 12px 16px; border-bottom: 1px solid var(--n100); }
+    .fp-sec:last-child { border-bottom: none; }
+    .fp-sec-lbl{ font-size: 9px; font-weight: 800; color: var(--n400); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+
+    .prio-pills { display: flex; flex-direction: column; gap: 4px; }
+    .pp {
+      display: flex; align-items: center; gap: 9px; padding: 7px 11px;
+      border-radius: 8px; border: 1.5px solid var(--n200); background: var(--n0);
+      color: var(--n500); cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500;
+      width: 100%; text-align: left; transition: all 0.12s;
+    }
+    .pp:hover  { border-color: var(--p-b); background: var(--p-pale); color: var(--p); }
+    .pp.on     { background: var(--p); border-color: var(--p); color: var(--n0); font-weight: 700; }
+    .pp-dot    { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Beziehungs-Pills */
+    .rel-pills { display: flex; flex-direction: column; gap: 4px; }
+    .rp {
+      display: flex; align-items: center; gap: 9px; padding: 7px 11px;
+      border-radius: 8px; border: 1.5px solid var(--n200); background: var(--n0);
+      color: var(--n500); cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500;
+      width: 100%; text-align: left; transition: all 0.12s;
+    }
+    .rp:hover { border-color: var(--p-b); background: var(--p-pale); color: var(--p); }
+    .rp.on    { background: var(--p); border-color: var(--p); color: var(--n0); font-weight: 700; }
+    .rp-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    .reg-sel {
+      width: 100%; font-family: inherit; font-size: 12px; font-weight: 500; padding: 8px 10px;
+      border: 1.5px solid var(--n200); border-radius: 8px; background: var(--n0); color: var(--n900);
+      cursor: pointer; outline: none; transition: border-color 0.12s;
+    }
+    .reg-sel:focus { border-color: var(--p); }
+
+    /* Kategorie Gruppen-Tabs */
+    .cat-tabs { display: flex; gap: 3px; margin-bottom: 10px; background: var(--n100); border-radius: 8px; padding: 3px; }
+    .cat-tab  {
+      flex: 1; font-family: inherit; font-size: 10px; font-weight: 700; padding: 5px 4px; border-radius: 6px;
+      border: none; background: none; color: var(--n500); cursor: pointer; transition: all 0.12s; text-align: center; letter-spacing: 0.3px;
+    }
+    .cat-tab.on { background: var(--n0); color: var(--n900); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .cat-pills { display: flex; flex-direction: column; gap: 3px; }
+    .cp {
+      display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+      border-radius: 7px; border: 1.5px solid var(--n200); background: var(--n0);
+      color: var(--n700); cursor: pointer; font-family: inherit; font-size: 11.5px; font-weight: 500;
+      width: 100%; text-align: left; transition: all 0.12s;
+    }
+    .cp:hover { background: var(--n50); border-color: var(--n300); }
+    .cp.on    { border-color: transparent; color: var(--n0); font-weight: 700; }
+    .cp-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .cat-grp-lbl { font-size: 9px; font-weight: 800; color: var(--n400); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+    .cat-cbs     { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+    .cat-lbl {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 500; color: var(--n700); cursor: pointer; padding: 4px 6px; user-select: none;
+      border-radius: 6px; transition: all 0.1s;
+    }
+    .cat-lbl:hover { color: var(--p); background: var(--p-pale); }
+    .cat-lbl input { width: 13px; height: 13px; cursor: pointer; accent-color: var(--p); }
+    .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── CLUSTER OVERRIDES ──────────────────────────── */
+    .marker-cluster-small,
+    .marker-cluster-medium,
+    .marker-cluster-large { background-color: rgba(91,33,182,0.18) !important; }
+    .marker-cluster-small div,
+    .marker-cluster-medium div,
+    .marker-cluster-large div {
+      background-color: var(--p) !important; color: white !important;
+      font-family: 'Inter', sans-serif !important; font-weight: 800 !important;
+      font-size: 13px !important; border-radius: 50% !important;
+      box-shadow: 0 0 0 3px rgba(91,33,182,0.25) !important;
+    }
+
+    /* ── MARKER ANIMATIONS ──────────────────────────── */
+    @keyframes markerBounce {
+      0%,100% { transform: translateY(0); }
+      40%     { transform: translateY(-10px); }
+    }
+    .marker-inner { transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1); transform-origin: bottom center; display:inline-block; }
+    .marker-inner:hover { transform: scale(1.22) translateY(-2px); }
+    .marker-search-hit .marker-inner { animation: markerBounce 0.7s ease; }
+
+    /* ── HOVER CARD ─────────────────────────────────── */
+    #hover-card {
+      position: absolute; z-index: 90;
+      width: 272px; pointer-events: none;
+      display: none; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.14));
+    }
+    #hover-card.visible { display: block; }
+    .hc {
+      background: var(--n0); border-radius: 14px;
+      border: 1.5px solid var(--n200); overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      animation: hcIn 0.18s cubic-bezier(0.34,1.3,0.64,1);
+    }
+    @keyframes hcIn { from { opacity:0; transform:scale(0.92) translateY(6px); } to { opacity:1; transform:none; } }
+    .hc-bar  { height: 4px; }
+    .hc-body { padding: 14px 16px 16px; }
+    .hc-name { font-size: 14px; font-weight: 800; color: var(--n900); letter-spacing: -0.3px; margin-bottom: 3px; line-height: 1.3; }
+    .hc-city { font-size: 11px; color: var(--n400); font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
+    .hc-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .hc-preview { font-size: 12px; line-height: 1.6; color: var(--n500); margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .hc-stats { display: flex; gap: 7px; margin-bottom: 12px; }
+    .hc-stat  { flex: 1; background: var(--n50); border: 1px solid var(--n200); border-radius: 8px; padding: 7px 10px; text-align: center; }
+    .hc-val   { font-size: 17px; font-weight: 800; color: var(--n900); }
+    .hc-lbl   { font-size: 9px; color: var(--n400); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 1px; }
+    .hc-hint  { font-size: 10.5px; color: var(--n400); font-weight: 500; text-align: center; padding-top: 6px; border-top: 1px solid var(--n100); display: flex; align-items: center; justify-content: center; gap: 5px; }
+    /* Arrow pointing down from card */
+    .hc::after { content:''; display:block; width:12px; height:12px; background:var(--n0); border-right:1.5px solid var(--n200); border-bottom:1.5px solid var(--n200); margin:-6px auto 0; transform:rotate(45deg); position:relative; z-index:1; }
+
+    /* Prio badges */
+    .pb { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .pb-main  { background: var(--p-pale); color: var(--p); border: 1px solid var(--p-b); }
+    .pb-watch { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-b); }
+    .pb-check { background: var(--n100); color: var(--n500); border: 1px solid var(--n200); }
+
+    /* ── LIST OVERLAY ───────────────────────────────── */
+    #list-overlay {
+      position: absolute; inset: 0; z-index: 100; background: var(--n50);
+      display: none; flex-direction: column; animation: fadeUp 0.2s ease;
+    }
+    #list-overlay.open { display: flex; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .lo-toolbar {
+      background: var(--n0); border-bottom: 1px solid var(--n200);
+      padding: 14px 24px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+    }
+    .lo-title  { font-size: 15px; font-weight: 800; color: var(--n900); letter-spacing: -0.3px; }
+    .lo-search {
+      flex: 1; max-width: 320px; display: flex; align-items: center; gap: 8px;
+      background: var(--n100); border: 1.5px solid var(--n200); border-radius: 8px;
+      padding: 0 12px; height: 38px; transition: border-color 0.12s;
+    }
+    .lo-search:focus-within { border-color: var(--p); background: var(--n0); }
+    .lo-search input { flex: 1; border: none; outline: none; background: transparent; font-family: inherit; font-size: 13px; color: var(--n900); }
+    .lo-search input::placeholder { color: var(--n300); }
+    .lo-sort   { font-family: inherit; font-size: 12px; font-weight: 500; padding: 7px 10px; border: 1.5px solid var(--n200); border-radius: 7px; background: var(--n0); cursor: pointer; outline: none; }
+    .lo-count  { font-size: 12px; font-weight: 600; color: var(--n400); white-space: nowrap; margin-left: auto; }
+
+    .lo-cats {
+      background: var(--n0); border-bottom: 1px solid var(--n200);
+      padding: 8px 24px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex-shrink: 0;
+    }
+    .lo-cat-chip {
+      font-family: inherit; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+      border: 1.5px solid var(--n200); background: var(--n0); color: var(--n500);
+      cursor: pointer; transition: all 0.12s; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .lo-cat-chip:hover { border-color: var(--p-b); color: var(--p); background: var(--p-pale); }
+    .lo-cat-chip.on { color: var(--n0); border-color: transparent; font-weight: 700; }
+    .lo-cat-chip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    .lo-grid {
+      flex: 1; overflow-y: auto; padding: 24px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-content: start;
+    }
+    .uc {
+      background: var(--n0); border: 1.5px solid var(--n200); border-radius: 12px;
+      overflow: hidden; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column;
+    }
+    .uc:hover { border-color: var(--p); box-shadow: var(--sh-md); transform: translateY(-2px); }
+    .uc-bar { height: 3px; }
+    .uc-body { padding: 16px; flex: 1; }
+    .uc-name { font-size: 14px; font-weight: 700; color: var(--n900); letter-spacing: -0.2px; margin-bottom: 4px; }
+    .uc-city { font-size: 11px; color: var(--n400); font-weight: 500; margin-bottom: 9px; display: flex; align-items: center; gap: 4px; }
+    .uc-chips{ display: flex; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
+    .uc-chip { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: var(--n100); border: 1px solid var(--n200); color: var(--n500); display: inline-flex; align-items: center; gap: 3px; }
+    .uc-chip-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .uc-footer {
+      padding: 10px 16px; border-top: 1px solid var(--n100);
+      background: var(--n50); display: flex; align-items: center; justify-content: space-between;
+    }
+    .uc-footer-lbl { font-size: 10px; font-weight: 600; color: var(--n400); }
+    .uc-btn {
+      font-family: inherit; font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 6px;
+      border: none; background: var(--p); color: var(--n0); cursor: pointer; transition: all 0.12s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .uc-btn:hover { background: var(--p-h); }
+
+    /* ── DASHBOARD OVERLAY ──────────────────────────── */
+    #db-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(10,6,20,0.55); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    #db-overlay.open { display: flex; }
+
+    #db {
+      background: var(--n0); border-radius: 16px;
+      width: 100%; max-width: 1060px; height: calc(100vh - 40px); max-height: 760px;
+      display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: var(--sh-lg); border: 1px solid var(--n200);
+      animation: dbIn 0.22s cubic-bezier(0.34,1.2,0.64,1);
+    }
+    @keyframes dbIn { from { opacity: 0; transform: scale(0.97) translateY(12px); } to { opacity: 1; transform: none; } }
+
+    /* Topbar */
+    #db-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 20px; border-bottom: 1px solid var(--n200); flex-shrink: 0;
+      background: var(--n900);
+    }
+    .db-topbar-lbl { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+    .db-topbar-acts { display: flex; gap: 8px; align-items: center; }
+    .db-edit-btn {
+      font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 6px;
+      border: 1.5px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7);
+      cursor: pointer; transition: all 0.12s; display: flex; align-items: center; gap: 5px;
+    }
+    .db-edit-btn:hover { background: rgba(255,255,255,0.14); color: var(--n0); }
+    .db-del-btn {
+      font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 6px;
+      border: 1.5px solid rgba(220,38,38,0.3); background: rgba(220,38,38,0.08); color: rgba(252,165,165,0.9);
+      cursor: pointer; transition: all 0.12s; display: flex; align-items: center; gap: 5px;
+    }
+    .db-del-btn:hover { background: rgba(220,38,38,0.22); border-color: rgba(220,38,38,0.6); color: var(--n0); }
+    .db-close {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border-radius: 6px; border: 1.5px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+      cursor: pointer; transition: all 0.12s;
+    }
+    .db-close:hover { background: rgba(255,255,255,0.15); color: var(--n0); }
+
+    /* Content split */
+    #db-content { display: flex; flex: 1; overflow: hidden; }
+
+    /* Left */
+    #db-left { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+    /* Hero */
+    #db-hero {
+      padding: 24px 28px 22px;
+      background: linear-gradient(140deg, #1a0542 0%, #3b0d8a 45%, #1e1b4b 100%);
+      flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    #db-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 90% 20%, rgba(167,139,250,0.18) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    #db-hero::after {
+      content: ''; position: absolute; bottom: -30px; right: -30px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: rgba(91,33,182,0.25); pointer-events: none;
+    }
+    .db-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 10px; position: relative; z-index: 1; }
+    .db-hero-text { flex: 1; min-width: 0; }
+    #db-name { font-size: 24px; font-weight: 900; color: var(--n0); letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 0; }
+    #db-logo-wrap {
+      width: 58px; height: 58px; border-radius: 12px; background: white; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.15);
+    }
+    #db-logo-wrap.hidden { display: none; }
+    #db-logo { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+    .db-hero-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; position: relative; z-index: 1; margin-top: 8px; }
+    .db-city-txt { font-size: 12px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 5px; }
+    .db-reg-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.45); }
+    #db-prio-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 20px; }
+    .db-stats { display: flex; gap: 8px; position: relative; z-index: 1; }
+    .db-stat { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.11); border-radius: 10px; padding: 10px 16px; text-align: center; min-width: 80px; }
+    .db-stat-val { font-size: 26px; font-weight: 900; color: var(--n0); letter-spacing: -0.5px; line-height: 1; }
+    .db-stat-lbl { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.38); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+
+    /* Sections */
+    #db-sections { flex: 1; overflow-y: auto; }
+    .db-sec { padding: 22px 32px; border-bottom: 1px solid var(--n100); }
+    .db-sec:last-child { border-bottom: none; padding-bottom: 28px; }
+    .db-sec-title { font-size: 10px; font-weight: 800; color: var(--n300); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+    .db-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .db-chip {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+      padding: 6px 12px; border-radius: 20px; background: var(--n100); border: 1.5px solid var(--n200); color: var(--n700);
+      transition: all 0.12s;
+    }
+    .db-chip:hover { border-color: var(--p-b); background: var(--p-pale); color: var(--p); }
+    .db-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .db-prog-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .db-prog {
+      font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 7px;
+      background: var(--p-pale); color: var(--p); border: 1px solid var(--p-b);
+    }
+
+    .db-text {
+      font-size: 13.5px; line-height: 1.75; color: var(--n700);
+      background: var(--n50); border-radius: 10px; padding: 16px 18px;
+      border-left: 3px solid var(--p);
+    }
+
+    .db-web-btn {
+      display: inline-flex; align-items: center; gap: 8px; font-family: inherit;
+      font-size: 13px; font-weight: 600; color: var(--p); background: var(--p-pale);
+      border: 1.5px solid var(--p-b); padding: 10px 18px; border-radius: 8px;
+      text-decoration: none; transition: all 0.12s;
+    }
+    .db-web-btn:hover { background: var(--p); color: var(--n0); border-color: var(--p); transform: translateY(-1px); }
+
+    /* Right panel */
+    #db-right { width: 360px; flex-shrink: 0; border-left: 1px solid var(--n200); display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Photo */
+    #db-photo-wrap {
+      flex-shrink: 0; position: relative; overflow: hidden;
+      background: var(--n100); border-bottom: 1px solid var(--n200);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #db-photo-wrap.has-photo { height: 220px; }
+    #db-photo-wrap.no-photo  { display: none; }
+    #db-photo {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.4s ease;
+    }
+    #db-photo:hover { transform: scale(1.03); }
+    .db-photo-label {
+      position: absolute; bottom: 10px; left: 10px;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      color: white; font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px; letter-spacing: 0.3px;
+    }
+
+    /* Map */
+    #db-map-frame { flex: 1; position: relative; overflow: hidden; min-height: 120px; }
+    #db-map-frame iframe { width: 100%; height: 100%; border: none; display: block; }
+    #db-map-foot {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.94); backdrop-filter: blur(8px);
+      padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    #db-coords { font-size: 10.5px; color: var(--n400); font-family: monospace; font-weight: 600; }
+    #db-osm-link { font-size: 11px; font-weight: 700; color: var(--p); text-decoration: none; margin-left: auto; }
+    #db-osm-link:hover { text-decoration: underline; }
+
+    /* ── MODAL ──────────────────────────────────────── */
+    #m-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(10,6,20,0.5); backdrop-filter: blur(4px);
+      z-index: 600; align-items: center; justify-content: center; padding: 20px;
+    }
+    #m-overlay.open { display: flex; }
+    #modal {
+      background: var(--n0); border-radius: 16px; padding: 28px;
+      width: 540px; max-width: 96vw; max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--sh-lg); border: 1px solid var(--n200);
+      animation: dbIn 0.18s ease;
+    }
+    .m-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    #m-title { font-size: 17px; font-weight: 800; color: var(--n900); letter-spacing: -0.4px; }
+    .m-close {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border-radius: 7px; border: 1.5px solid var(--n200); background: none;
+      color: var(--n400); cursor: pointer; transition: all 0.12s;
+    }
+    .m-close:hover { background: var(--n100); color: var(--n700); }
+    .m-sec { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--n100); }
+    .m-sec:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .m-sec-title { font-size: 10px; font-weight: 800; color: var(--n300); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
+    .fr { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .fr:last-child { margin-bottom: 0; }
+    .fr label { font-size: 12px; font-weight: 600; color: var(--n700); }
+    .fc {
+      font-family: inherit; font-size: 13px; padding: 9px 12px;
+      border: 1.5px solid var(--n200); border-radius: 7px; outline: none;
+      color: var(--n900); background: var(--n50); width: 100%; transition: all 0.12s;
+    }
+    .fc:focus { border-color: var(--p); background: var(--n0); box-shadow: 0 0 0 3px rgba(91,33,182,0.08); }
+    .fc::placeholder { color: var(--n300); }
+    textarea.fc { resize: vertical; min-height: 72px; line-height: 1.55; }
+    .fhint { font-size: 10.5px; color: var(--n300); }
+    .fr2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .fr2 .fr { margin-bottom: 0; }
+    .geo-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    #geo-btn {
+      font-family: inherit; font-size: 11px; font-weight: 700; padding: 7px 12px; border-radius: 6px;
+      border: 1.5px solid var(--p-b); background: var(--p-pale); color: var(--p); cursor: pointer; transition: all 0.12s;
+    }
+    #geo-btn:hover { background: var(--p); color: var(--n0); }
+    #geo-status { font-size: 11px; color: var(--n400); line-height: 1.4; }
+    .cat-tree { background: var(--n50); border: 1px solid var(--n200); border-radius: 10px; padding: 12px; }
+    .ct-grp { margin-bottom: 10px; }
+    .ct-grp:last-child { margin-bottom: 0; }
+    .ct-main { font-size: 9.5px; font-weight: 800; color: var(--n400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; padding: 2px 7px; background: var(--n200); border-radius: 4px; display: inline-block; }
+    .ct-subs { display: flex; flex-direction: column; gap: 4px; padding-left: 4px; }
+    .ct-sub  { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; color: var(--n700); cursor: pointer; }
+    .ct-sub input { width: 14px; height: 14px; cursor: pointer; accent-color: var(--p); }
+    .ct-sub label { cursor: pointer; }
+    .m-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--n100); }
+    .btn-cancel {
+      font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 7px;
+      border: 1.5px solid var(--n200); background: var(--n0); color: var(--n500); cursor: pointer; transition: all 0.12s;
+    }
+    .btn-cancel:hover { background: var(--n100); color: var(--n900); }
+    .btn-save {
+      font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 24px; border-radius: 7px;
+      border: none; background: var(--p); color: var(--n0); cursor: pointer; transition: all 0.15s;
+    }
+    .btn-save:hover { background: var(--p-h); box-shadow: 0 4px 14px rgba(91,33,182,0.3); transform: translateY(-1px); }
+    .btn-save:active { transform: none; }
+
+    /* ── BEZIEHUNGSSTATUS ───────────────────────────── */
+    .rel-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 20px;
+    }
+    .rel-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .rel-none     { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); }
+    .rel-contacted{ background: rgba(59,130,246,0.2);  color: #93C5FD; }
+    .rel-meeting  { background: rgba(245,158,11,0.2);  color: #FCD34D; }
+    .rel-coop     { background: rgba(16,185,129,0.2);  color: #6EE7B7; }
+    .rel-partner  { background: rgba(167,139,250,0.3); color: #C4B5FD; }
+
+    /* ── ANSPRECHPARTNER ────────────────────────────── */
+    .contact-card {
+      background: var(--n100); border: 1px solid var(--n200); border-radius: 10px;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .contact-name  { font-size: 14px; font-weight: 700; color: var(--n900); }
+    .contact-role  { font-size: 11px; font-weight: 600; color: var(--n500); }
+    .contact-email {
+      font-size: 12px; font-weight: 500; color: var(--p-l);
+      text-decoration: none; display: flex; align-items: center; gap: 5px; margin-top: 2px;
+    }
+    .contact-email:hover { text-decoration: underline; }
+    .contact-placeholder {
+      font-size: 12px; color: var(--n300); font-style: italic;
+      background: var(--n50); border: 1.5px dashed var(--n200);
+      border-radius: 10px; padding: 14px 16px; text-align: center;
+    }
+
+    /* ── KANN-FELDER ────────────────────────────────── */
+    .kann-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .kann-item {
+      background: var(--n50); border: 1px solid var(--n200); border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .kann-label { font-size: 9.5px; font-weight: 800; color: var(--n300); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 3px; }
+    .kann-value { font-size: 13px; font-weight: 600; color: var(--n700); }
+    .kann-value.empty { color: var(--n300); font-style: italic; font-weight: 400; font-size: 12px; }
+    .kann-action { grid-column: 1/-1; }
+
+    /* ── ONBOARDING MODAL ───────────────────────────── */
+    #onboarding-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(10,6,20,0.6); backdrop-filter: blur(4px);
+      z-index: 700; align-items: center; justify-content: center; padding: 20px;
+    }
+    #onboarding-overlay.open { display: flex; }
+    #onboarding-modal {
+      background: var(--n0); border-radius: 16px;
+      width: 560px; max-width: 96vw; max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.2); border: 1px solid var(--n200);
+      animation: dbIn 0.2s ease;
+    }
+    .ob-header {
+      padding: 24px 28px 0; display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .ob-header h2 { font-size: 20px; font-weight: 800; color: var(--n900); letter-spacing: -0.4px; }
+    .ob-header p  { font-size: 12px; color: var(--n400); margin-top: 4px; }
+    .ob-close {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border-radius: 7px; border: 1.5px solid var(--n200); background: none;
+      color: var(--n400); cursor: pointer; flex-shrink: 0; transition: all 0.12s;
+    }
+    .ob-close:hover { background: var(--n100); color: var(--n700); }
+    .ob-steps { padding: 20px 28px 28px; display: flex; flex-direction: column; gap: 0; }
+    .ob-step {
+      display: flex; gap: 16px; padding: 16px 0;
+      border-bottom: 1px solid var(--n100);
+    }
+    .ob-step:last-child { border-bottom: none; }
+    .ob-icon {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--p-pale);
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      flex-shrink: 0; border: 1.5px solid var(--p-b);
+    }
+    .ob-step-body { flex: 1; }
+    .ob-step-title { font-size: 14px; font-weight: 700; color: var(--n900); margin-bottom: 4px; }
+    .ob-step-desc  { font-size: 12.5px; color: var(--n500); line-height: 1.6; }
+    .ob-step-desc kbd {
+      background: var(--n100); border: 1px solid var(--n300); border-radius: 4px;
+      padding: 1px 6px; font-size: 11px; font-family: monospace; color: var(--n700);
+    }
+
+    /* ── FOOTER ─────────────────────────────────────── */
+    footer { background: var(--n900); padding: 0 24px; height: 38px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; z-index: 10; }
+    .leg  { display: flex; align-items: center; gap: 6px; font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600; white-space: nowrap; }
+    .leg-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .leg-sep { width: 1px; height: 12px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+    .osm-c { margin-left: auto; font-size: 10px; color: rgba(255,255,255,0.35); white-space: nowrap; }
+    .osm-c a { color: rgba(255,255,255,0.35); text-decoration: none; }
+    .osm-c a:hover { color: rgba(255,255,255,0.65); }
+
+    /* ── LEAFLET OVERRIDES ──────────────────────────── */
+    .leaflet-tooltip {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+      border-radius: 8px; border: 1px solid var(--n200); box-shadow: var(--sh-md);
+      background: var(--n0); color: var(--n900); padding: 7px 11px;
+    }
+    .leaflet-control-zoom { border: 1px solid var(--n200) !important; border-radius: 8px !important; box-shadow: var(--sh-sm) !important; overflow: hidden; }
+    .leaflet-control-zoom a { color: var(--n700) !important; }
+    .leaflet-control-zoom a:hover { background: var(--n100) !important; color: var(--p) !important; }
+    .leaflet-control-zoom-in { border-bottom: 1px solid var(--n200) !important; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--n200); border-radius: 10px; }
+
+    /* ── KANBAN ─────────────────────────────────────── */
+    #kanban-overlay {
+      position: absolute; inset: 0; z-index: 100; background: var(--n100);
+      display: none; flex-direction: column; animation: fadeUp 0.2s ease;
+    }
+    #kanban-overlay.open { display: flex; }
+    .kb-toolbar {
+      background: var(--n0); border-bottom: 1px solid var(--n200);
+      padding: 14px 24px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+    }
+    .kb-title  { font-size: 15px; font-weight: 800; color: var(--n900); letter-spacing: -0.3px; }
+    .kb-board  {
+      flex: 1; overflow-x: auto; overflow-y: hidden;
+      display: flex; gap: 12px; padding: 20px 24px; align-items: flex-start;
+    }
+    .kb-col {
+      flex: 0 0 260px; display: flex; flex-direction: column; gap: 0;
+      background: var(--n0); border-radius: 12px; border: 1px solid var(--n200);
+      max-height: 100%; overflow: hidden;
+    }
+    .kb-col.drag-over { border-color: var(--p); box-shadow: 0 0 0 2px var(--p-b); }
+    .kb-col-hd {
+      padding: 12px 14px; border-bottom: 1px solid var(--n100);
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    .kb-col-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .kb-col-name { font-size: 11px; font-weight: 800; color: var(--n700); text-transform: uppercase; letter-spacing: 0.6px; flex: 1; }
+    .kb-col-cnt  { font-size: 11px; font-weight: 700; color: var(--n0); background: var(--n400); border-radius: 20px; padding: 1px 7px; min-width: 20px; text-align: center; }
+    .kb-col-body { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+    .kb-card {
+      background: var(--n0); border: 1.5px solid var(--n200); border-radius: 10px;
+      padding: 12px; cursor: grab; transition: all 0.15s; user-select: none;
+    }
+    .kb-card:active { cursor: grabbing; }
+    .kb-card:hover  { border-color: var(--p-b); box-shadow: var(--sh-sm); transform: translateY(-1px); }
+    .kb-card.dragging { opacity: 0.4; transform: scale(0.97); }
+    .kb-card-top  { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 4px; }
+    .kb-card-name { font-size: 12.5px; font-weight: 700; color: var(--n900); letter-spacing: -0.2px; line-height: 1.3; }
+    .kb-card-score{ font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 20px; flex-shrink: 0; }
+    .kb-card-city { font-size: 10.5px; color: var(--n400); font-weight: 500; margin-bottom: 7px; }
+    .kb-card-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 8px; }
+    .kb-card-tag  { font-size: 9.5px; font-weight: 600; padding: 1px 6px; border-radius: 20px; background: var(--n100); color: var(--n500); border: 1px solid var(--n200); }
+    .kb-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-top: 7px; border-top: 1px solid var(--n100); }
+    .kb-card-prio { font-size: 9.5px; font-weight: 600; color: var(--n400); }
+    .kb-open-btn  { font-family: inherit; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 6px; border: none; background: var(--p); color: var(--n0); cursor: pointer; transition: all 0.1s; }
+    .kb-open-btn:hover { background: var(--p-h); }
+    .kb-empty     { font-size: 11px; color: var(--n300); text-align: center; padding: 20px 10px; font-style: italic; }
+    /* Drag-over highlight-line */
+    .kb-col-body.drag-over-body { background: var(--p-pale); border-radius: 8px; }
+
+    /* ── SCORE BREAKDOWN ────────────────────────────── */
+    .score-breakdown { margin-top: 14px; display: flex; flex-direction: column; gap: 5px; }
+    .sb-row  { display: flex; align-items: center; gap: 8px; }
+    .sb-lbl  { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; width: 62px; flex-shrink: 0; }
+    .sb-bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.12); border-radius: 20px; overflow: hidden; }
+    .sb-bar-fill { height: 100%; border-radius: 20px; background: rgba(255,255,255,0.7); transition: width 0.6s ease; }
+    .sb-val  { font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.55); width: 28px; text-align: right; flex-shrink: 0; }
+
+    /* ── AKTIVITÄTEN-LOG ────────────────────────────── */
+    .act-timeline { display: flex; flex-direction: column; gap: 0; }
+    .act-entry {
+      display: flex; gap: 12px; padding: 10px 0;
+      border-bottom: 1px solid var(--n100); position: relative;
+    }
+    .act-entry:last-child { border-bottom: none; }
+    .act-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; width: 16px; padding-top: 3px; }
+    .act-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--p); border: 2px solid var(--n0); box-shadow: 0 0 0 2px var(--p-b); flex-shrink: 0; }
+    .act-line { flex: 1; width: 2px; background: var(--n200); margin-top: 2px; }
+    .act-body { flex: 1; min-width: 0; }
+    .act-date { font-size: 10px; font-weight: 700; color: var(--n400); margin-bottom: 2px; }
+    .act-text { font-size: 12.5px; color: var(--n700); line-height: 1.5; }
+    .act-add-wrap { margin-top: 10px; }
+    .act-add-form { background: var(--n50); border: 1.5px solid var(--n200); border-radius: 10px; padding: 12px; display: none; flex-direction: column; gap: 8px; }
+    .act-add-form.open { display: flex; }
+    .act-add-date { font-family: inherit; font-size: 12px; padding: 6px 10px; border: 1.5px solid var(--n200); border-radius: 7px; outline: none; }
+    .act-add-date:focus { border-color: var(--p); }
+    .act-add-text { font-family: inherit; font-size: 12px; padding: 7px 10px; border: 1.5px solid var(--n200); border-radius: 7px; outline: none; resize: none; min-height: 56px; line-height: 1.5; }
+    .act-add-text:focus { border-color: var(--p); }
+    .act-add-btns { display: flex; gap: 8px; justify-content: flex-end; }
+    .act-btn-cancel { font-family: inherit; font-size: 11px; font-weight: 600; padding: 5px 12px; border: 1.5px solid var(--n200); background: var(--n0); color: var(--n500); border-radius: 6px; cursor: pointer; }
+    .act-btn-save   { font-family: inherit; font-size: 11px; font-weight: 700; padding: 5px 14px; border: none; background: var(--p); color: var(--n0); border-radius: 6px; cursor: pointer; }
+    .act-btn-toggle { font-family: inherit; font-size: 11px; font-weight: 700; padding: 6px 14px; border: 1.5px solid var(--p-b); background: var(--p-pale); color: var(--p); border-radius: 7px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.12s; }
+    .act-btn-toggle:hover { background: var(--p); color: var(--n0); border-color: var(--p); }
+
+    /* ── INTERNES d&b FELD ──────────────────────────── */
+    .intern-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .intern-item { background: var(--p-pale); border: 1px solid var(--p-b); border-radius: 8px; padding: 9px 12px; }
+    .intern-lbl  { font-size: 9px; font-weight: 800; color: var(--p-l); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .intern-val  { font-size: 12.5px; font-weight: 600; color: var(--p); }
+    .intern-val.empty { color: var(--n300); font-style: italic; font-weight: 400; font-size: 11px; }
+    .budget-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+    .budget-yes { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-b); }
+    .budget-no  { background: var(--n100); color: var(--n400); border: 1px solid var(--n200); }
+
+    /* ── PRINT ──────────────────────────────────────── */
+    @media print {
+      header, footer, #filter-panel, .search-wrap, #list-overlay,
+      #kanban-overlay, #db-overlay .db-topbar, #db-map-frame,
+      #db-overlay .db-edit-btn, #db-overlay .db-del-btn, #db-overlay .db-close,
+      #db-photo-wrap, .act-add-wrap { display: none !important; }
+      body { overflow: visible !important; height: auto !important; background: white !important; }
+      #app-body { overflow: visible !important; }
+      #db-overlay {
+        position: static !important; background: none !important;
+        backdrop-filter: none !important; padding: 0 !important;
+        display: block !important;
+      }
+      #db { box-shadow: none !important; border: none !important; height: auto !important; max-height: none !important; border-radius: 0 !important; }
+      #db-content { flex-direction: column !important; }
+      #db-left, #db-right { width: 100% !important; }
+      #db-hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      #db-sections { overflow: visible !important; }
+      .score-breakdown { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* ── SCORE ──────────────────────────────────────── */
+    .score-ring {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+      border: 3px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.07);
+      position: relative; z-index: 1;
+    }
+    .score-ring-val  { font-size: 22px; font-weight: 900; color: var(--n0); line-height: 1; letter-spacing: -1px; }
+    .score-ring-lbl  { font-size: 7.5px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px; }
+    .score-chip      { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+    .score-chip-sm   { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; }
+    .dist-line       { font-size: 10.5px; color: rgba(255,255,255,0.38); font-weight: 500; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+    /* Score in list */
+    .uc-score { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+    /* Table view */
+    .lo-table-wrap { flex:1; overflow-y:auto; padding:16px 24px; }
+    table.lo-tbl { width:100%; border-collapse:collapse; font-size:12px; }
+    table.lo-tbl th { font-size:9px; font-weight:800; color:var(--n400); text-transform:uppercase; letter-spacing:0.7px; padding:8px 12px; border-bottom:2px solid var(--n200); text-align:left; cursor:pointer; user-select:none; white-space:nowrap; }
+    table.lo-tbl th:hover { color:var(--p); }
+    table.lo-tbl td { padding:11px 12px; border-bottom:1px solid var(--n100); vertical-align:middle; }
+    table.lo-tbl tr:hover td { background:var(--p-pale); cursor:pointer; }
+    table.lo-tbl .td-name { font-weight:700; color:var(--n900); }
+    table.lo-tbl .td-city { color:var(--n400); font-size:11px; }
+    /* View toggle */
+    .view-toggle { display:flex; gap:2px; background:var(--n100); border-radius:7px; padding:3px; }
+    .vt-btn { width:30px; height:28px; border:none; background:none; border-radius:5px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--n400); transition:all 0.12s; }
+    .vt-btn.on { background:var(--n0); color:var(--p); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+    /* Empty state */
+    .empty-state { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 20px; gap:12px; }
+    .empty-icon  { font-size:40px; opacity:0.35; }
+    .empty-title { font-size:15px; font-weight:700; color:var(--n700); }
+    .empty-sub   { font-size:12px; color:var(--n400); text-align:center; max-width:280px; line-height:1.6; }
+    .empty-btn   { font-family:inherit; font-size:12px; font-weight:700; padding:8px 18px; border-radius:7px; border:none; background:var(--p); color:var(--n0); cursor:pointer; margin-top:4px; transition:all 0.12s; }
+    .empty-btn:hover { background:var(--p-h); }
+
+    /* ── FÄLLIGKEIT & PROFILSTÄRKE ──────────────────── */
+    .overdue-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+      background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(220,38,38,0.2);
+    }
+    .profile-bar-wrap { margin-top: 8px; }
+    .profile-bar-lbl  { font-size: 9.5px; font-weight: 600; color: var(--n400); margin-bottom: 3px; display: flex; justify-content: space-between; }
+    .profile-bar      { height: 4px; background: var(--n100); border-radius: 20px; overflow: hidden; }
+    .profile-bar-fill { height: 100%; border-radius: 20px; transition: width 0.5s ease; }
+
+    /* ── TOAST ──────────────────────────────────────── */
+    #toast-container { position: fixed; bottom: 54px; right: 20px; z-index: 1000; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
+    .toast {
+      background: var(--n900); color: var(--n0); font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 500; padding: 11px 16px; border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;
+      animation: toastIn 0.25s cubic-bezier(0.34,1.3,0.64,1); pointer-events: all;
+      max-width: 320px; border-left: 3px solid var(--p);
+    }
+    .toast.success { border-left-color: var(--ok); }
+    .toast.error   { border-left-color: var(--danger); }
+    .toast.hiding  { animation: toastOut 0.2s ease forwards; }
+    @keyframes toastIn  { from { opacity:0; transform:translateY(12px) scale(0.96); } to { opacity:1; transform:none; } }
+    @keyframes toastOut { from { opacity:1; transform:none; } to { opacity:0; transform:translateY(8px) scale(0.95); } }
+
+    /* ── CUSTOM CONFIRM ─────────────────────────────── */
+    #confirm-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(10,6,20,0.5); backdrop-filter: blur(4px);
+      z-index: 900; align-items: center; justify-content: center;
+    }
+    #confirm-overlay.open { display: flex; }
+    #confirm-box {
+      background: var(--n0); border-radius: 14px; padding: 28px; width: 380px; max-width: 96vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18); border: 1px solid var(--n200);
+      animation: dbIn 0.18s ease;
+    }
+    #confirm-box h3 { font-size: 16px; font-weight: 800; color: var(--n900); margin-bottom: 8px; }
+    #confirm-box p  { font-size: 13px; color: var(--n500); line-height: 1.6; margin-bottom: 24px; }
+    .confirm-btns   { display: flex; gap: 10px; justify-content: flex-end; }
+    .confirm-cancel { font-family:inherit; font-size:13px; font-weight:600; padding:9px 20px; border-radius:7px; border:1.5px solid var(--n200); background:var(--n0); color:var(--n500); cursor:pointer; }
+    .confirm-cancel:hover { background:var(--n100); }
+    #confirm-ok     { font-family:inherit; font-size:13px; font-weight:700; padding:9px 22px; border-radius:7px; border:none; cursor:pointer; transition:all 0.12s; }
+    #confirm-ok.danger { background:var(--danger); color:var(--n0); }
+    #confirm-ok.danger:hover { background:#b91c1c; }
+    #confirm-ok.primary { background:var(--p); color:var(--n0); }
+    #confirm-ok.primary:hover { background:var(--p-h); }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ════════════════════════════════════════════════ -->
+<header>
+  <div class="logo-wrap">
+    <svg class="logo-svg" viewBox="0 0 390 50" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .ldb  { font-family:'Inter',sans-serif; font-weight:900; font-size:26px; fill:#111; }
+          .lat  { font-family:'Inter',sans-serif; font-weight:400; font-size:10px; fill:#666; letter-spacing:.3px; }
+          .lhft { font-family:'Bebas Neue',sans-serif; font-weight:400; font-size:19px; fill:#E4002B; letter-spacing:.5px; }
+        </style>
+      </defs>
+      <text class="ldb" x="0" y="29">d&amp;b</text>
+      <text class="lat" x="1" y="43">audiotechnik</text>
+      <rect x="80" y="4" width="40" height="40" rx="2" fill="none" stroke="#111" stroke-width="2"/>
+      <rect x="82" y="6" width="17" height="17" fill="#111"/>
+      <polygon points="100,6 122,6 122,24" fill="#111"/>
+      <rect x="100" y="6" width="22" height="18" fill="none" stroke="#111" stroke-width="1.5"/>
+      <rect x="82" y="25" width="17" height="17" fill="none" stroke="#111" stroke-width="1.5"/>
+      <rect x="100" y="25" width="22" height="17" fill="#111"/>
+      <text x="124" y="47" font-family="serif" font-size="9" fill="#111">®</text>
+      <text x="145" y="34" font-family="Inter,sans-serif" font-weight="800" font-size="22" fill="#CCC">×</text>
+      <text class="lhft" x="183" y="17">HOCHSCHULE</text>
+      <text class="lhft" x="183" y="34">FÜR TECHNIK</text>
+      <text class="lhft" x="183" y="50">STUTTGART</text>
+    </svg>
+  </div>
+
+  <div class="hd-tag">
+    <h1>Young Talents Hochschulkarte</h1>
+    <p>Strategische Nachwuchsplanung weltweit</p>
+  </div>
+
+  <div class="hd-space"></div>
+
+  <div class="hd-right">
+    <span id="count-badge">0 Hochschulen</span>
+    <button class="btn btn-ghost" id="kanban-btn" onclick="toggleKanban()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="5" height="18"/><rect x="10" y="3" width="5" height="12"/><rect x="17" y="3" width="5" height="15"/></svg>
+      Kanban
+    </button>
+    <button class="btn btn-ghost" id="list-btn" onclick="toggleList()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Liste
+    </button>
+    <button class="btn btn-solid" onclick="openModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Hinzufügen
+    </button>
+    <div class="settings-menu">
+      <button class="btn btn-icon" id="settings-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div class="settings-dd" id="settings-dd">
+        <button class="s-item" onclick="openOnboarding()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Hilfe &amp; Onboarding</button>
+        <button class="s-item" onclick="openStats()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Statistik-Übersicht</button>
+        <button class="s-item" onclick="openScoreFormel()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Score-Formel erklären</button>
+        <button class="s-item" onclick="shareViaURL()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Teilen via Link</button>
+        <button class="s-item" onclick="printDashboard()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Steckbrief drucken</button>
+        <div class="s-divider"></div>
+        <button class="s-item" onclick="exportData()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>JSON exportieren</button>
+        <button class="s-item" onclick="exportCSV()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>CSV exportieren</button>
+        <button class="s-item" onclick="triggerImport()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Importieren</button>
+        <div class="s-divider"></div>
+        <button class="s-item" onclick="switchMapTheme()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Kartenthema: <span id="theme-label">Hell</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ BODY ══════════════════════════════════════════════════ -->
+<div id="app-body">
+  <div id="map"></div>
+  <div id="hover-card"></div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search-inner">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Hochschule oder Stadt suchen…">
+      <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+    </div>
+  </div>
+
+  <!-- Filter Panel -->
+  <div id="filter-panel">
+    <div class="fp-hd">
+      <span class="fp-lbl" id="fp-lbl">Filter</span>
+      <button class="fp-reset" id="fp-reset" onclick="clearAllFilters()">Zurücksetzen</button>
+    </div>
+    <div class="fp-body">
+      <div class="fp-sec">
+        <div class="fp-sec-lbl">Priorität</div>
+        <div class="prio-pills">
+          <button class="pp on" data-prio="all"><span class="pp-dot" style="background:var(--n300)"></span>Alle</button>
+          <button class="pp" data-prio="main"><span class="pp-dot" style="background:var(--p)"></span>Hauptziel</button>
+          <button class="pp" data-prio="watch"><span class="pp-dot" style="background:var(--ok)"></span>Beobachten</button>
+          <button class="pp" data-prio="check"><span class="pp-dot" style="background:var(--n300)"></span>Prüfen</button>
+        </div>
+      </div>
+      <div class="fp-sec">
+        <div class="fp-sec-lbl">Beziehungsstatus</div>
+        <div class="rel-pills">
+          <button class="rp on" data-rel="all"><span class="rp-dot" style="background:var(--n300)"></span>Alle</button>
+          <button class="rp" data-rel="none"><span class="rp-dot" style="background:var(--n200);border:1px solid var(--n300)"></span>Kein Kontakt</button>
+          <button class="rp" data-rel="contacted"><span class="rp-dot" style="background:#93C5FD"></span>Kontakt hergestellt</button>
+          <button class="rp" data-rel="meeting"><span class="rp-dot" style="background:#FCD34D"></span>Gespräch geführt</button>
+          <button class="rp" data-rel="coop"><span class="rp-dot" style="background:#6EE7B7"></span>Kooperation laufend</button>
+          <button class="rp" data-rel="partner"><span class="rp-dot" style="background:#C4B5FD"></span>Strateg. Partner</button>
+        </div>
+      </div>
+      <div class="fp-sec">
+        <div class="fp-sec-lbl">Region</div>
+        <select class="reg-sel" id="region-sel">
+          <option value="all">Alle Regionen</option>
+          <option value="europe">Europa</option>
+          <option value="americas">Amerika</option>
+          <option value="asia">Asien</option>
+          <option value="oceania">Ozeanien</option>
+        </select>
+      </div>
+      <div class="fp-sec">
+        <div class="fp-sec-lbl">Kategorien</div>
+        <div class="cat-tabs" id="cat-tab-bar"></div>
+        <div class="cat-pills" id="fp-cats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kanban Overlay -->
+  <div id="kanban-overlay">
+    <div class="kb-toolbar">
+      <span class="kb-title">Kanban-Board</span>
+      <span style="font-size:11px;color:var(--n400);font-weight:500;">Hochschulen per Drag &amp; Drop zwischen Status verschieben</span>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" onclick="toggleKanban()" style="margin-left:8px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Schließen
+      </button>
+    </div>
+    <div class="kb-board" id="kb-board"></div>
+  </div>
+
+  <!-- List Overlay -->
+  <div id="list-overlay">
+    <div class="lo-toolbar">
+      <span class="lo-title">Alle Hochschulen</span>
+      <div class="lo-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#AAA" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="list-search" placeholder="Suchen…" oninput="renderList()">
+      </div>
+      <select class="lo-sort" id="list-sort" onchange="renderList()">
+        <option value="score">Score ↓</option>
+        <option value="name">Name A–Z</option>
+        <option value="prio">Priorität</option>
+        <option value="region">Region</option>
+      </select>
+      <div class="view-toggle">
+        <button class="vt-btn on" id="vt-grid" onclick="setListView('grid')" title="Kachelansicht">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="vt-btn" id="vt-table" onclick="setListView('table')" title="Tabellenansicht">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+      <span class="lo-count" id="lo-count"></span>
+      <button class="btn btn-ghost" onclick="toggleList()" style="margin-left:8px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Schließen
+      </button>
+    </div>
+    <div class="lo-cats" id="lo-cats">
+      <button class="lo-cat-chip" id="lo-top-btn" onclick="toggleTopFilter()" style="border-color:var(--ok);color:var(--ok);">
+        <span class="lo-cat-chip-dot" style="background:var(--ok)"></span>Nur Top-Kandidaten (Score ≥ 60)
+      </button>
+    </div>
+    <div class="lo-grid" id="lo-grid"></div>
+    <div class="lo-table-wrap" id="lo-table" style="display:none;"></div>
+  </div>
+
+  <!-- Dashboard Overlay -->
+  <div id="db-overlay" onclick="handleDbOverlayClick(event)">
+    <div id="db">
+      <div id="db-topbar">
+        <span class="db-topbar-lbl">Young Talents · Hochschuldashboard</span>
+        <div class="db-topbar-acts">
+          <button class="db-edit-btn" onclick="editCurrent()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Bearbeiten
+          </button>
+          <button class="db-del-btn" onclick="deleteCurrent()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Löschen
+          </button>
+          <button class="db-close" onclick="closeDb()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="db-content">
+        <div id="db-left">
+          <div id="db-hero">
+            <div class="db-hero-top">
+              <div class="db-hero-text">
+                <div id="db-name"></div>
+              </div>
+              <div id="db-logo-wrap" class="hidden">
+                <img id="db-logo" src="" alt="Logo"/>
+              </div>
+            </div>
+            <div class="db-hero-row">
+              <span class="db-city-txt">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="db-city"></span>
+              </span>
+              <span class="db-reg-pill" id="db-reg"></span>
+              <span id="db-prio-badge"></span>
+              <span id="db-rel-badge" class="rel-badge"></span>
+              <span id="db-last-contact" style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:500;margin-left:4px;"></span>
+            </div>
+            <div class="db-stats" id="db-stats"></div>
+          </div>
+
+          <div id="db-sections">
+            <div class="db-sec">
+              <div class="db-sec-title">Kategorien</div>
+              <div class="db-chips" id="db-cats"></div>
+            </div>
+            <div class="db-sec">
+              <div class="db-sec-title">Studienprogramme</div>
+              <div class="db-prog-wrap" id="db-progs"></div>
+            </div>
+            <div class="db-sec">
+              <div class="db-sec-title">Relevanz für d&amp;b audiotechnik</div>
+              <div class="db-text" id="db-rel"></div>
+            </div>
+            <div class="db-sec" id="db-coop-sec">
+              <div class="db-sec-title">Kooperationsmöglichkeiten</div>
+              <div class="db-text" id="db-coop"></div>
+            </div>
+            <div class="db-sec">
+              <div class="db-sec-title">Ansprechpartner</div>
+              <div id="db-contact-wrap"></div>
+            </div>
+            <div class="db-sec">
+              <div class="db-sec-title">Weitere Informationen <span style="font-size:9px;font-weight:600;background:var(--n200);color:var(--n500);padding:2px 7px;border-radius:20px;margin-left:6px;letter-spacing:0.3px;">KANN</span></div>
+              <div class="kann-grid" id="db-kann"></div>
+            </div>
+            <div class="db-sec" id="db-intern-sec" style="display:none;">
+              <div class="db-sec-title">Intern · d&amp;b audiotechnik</div>
+              <div class="intern-grid" id="db-intern"></div>
+            </div>
+            <div class="db-sec">
+              <div class="db-sec-title" style="display:flex;align-items:center;justify-content:space-between;">
+                Aktivitäten
+                <button class="act-btn-toggle" id="act-toggle-btn" onclick="toggleActForm()">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Eintrag
+                </button>
+              </div>
+              <div class="act-timeline" id="db-activities"></div>
+              <div class="act-add-wrap">
+                <div class="act-add-form" id="act-add-form">
+                  <input type="date" class="act-add-date" id="act-date"/>
+                  <textarea class="act-add-text" id="act-text" placeholder="Was wurde besprochen? Nächste Schritte?"></textarea>
+                  <div class="act-add-btns">
+                    <button class="act-btn-cancel" onclick="toggleActForm()">Abbrechen</button>
+                    <button class="act-btn-save" onclick="saveActivity()">Speichern</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="db-sec" id="db-notes-sec" style="display:none;">
+              <div class="db-sec-title">Interne Notizen</div>
+              <div class="db-text" id="db-notes" style="white-space:pre-wrap;font-style:italic;border-left-color:var(--n300);"></div>
+            </div>
+            <div class="db-sec" id="db-web-sec" style="display:none;">
+              <div class="db-sec-title">Website</div>
+              <a id="db-web-link" class="db-web-btn" href="#" target="_blank" rel="noopener">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Website öffnen
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div id="db-right">
+          <!-- Photo (shown if URL exists) -->
+          <div id="db-photo-wrap" class="no-photo">
+            <img id="db-photo" src="" alt="Hochschulfoto"/>
+            <span class="db-photo-label" id="db-photo-label"></span>
+          </div>
+          <!-- OSM Map -->
+          <div id="db-map-frame">
+            <iframe id="db-iframe" src="" allowfullscreen></iframe>
+            <div id="db-map-foot">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#AAA" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="db-coords"></span>
+              <a id="db-osm-link" href="#" target="_blank">In OSM öffnen →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="m-overlay" onclick="handleModalClick(event)">
+    <div id="modal">
+      <div class="m-hd">
+        <h2 id="m-title">Hochschule hinzufügen</h2>
+        <button class="m-close" onclick="closeModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Basis-Information</div>
+        <div class="fr"><label>Name *</label><input class="fc" type="text" id="f-name" placeholder="z.B. Universität Stuttgart"/></div>
+        <div class="fr"><label>Stadt, Land</label><input class="fc" type="text" id="f-city" placeholder="z.B. Stuttgart, Deutschland"/></div>
+        <div class="fr"><label>Website</label><input class="fc" type="url" id="f-website" placeholder="https://…" oninput="autoFillLogo(this.value)"/></div>
+        <div class="fr">
+          <label>Logo-URL <span style="font-weight:400;color:var(--n400);">(wird automatisch aus Website befüllt)</span></label>
+          <input class="fc" type="url" id="f-logo" placeholder="https://logo.clearbit.com/…"/>
+          <div class="fhint">Wird automatisch per Domain ermittelt — oder manuell überschreiben.</div>
+        </div>
+        <div class="fr">
+          <label>Foto-URL <span style="font-weight:400;color:var(--n400);">(Campus-Bild)</span></label>
+          <input class="fc" type="url" id="f-photo" placeholder="https://upload.wikimedia.org/…"/>
+          <div class="fhint">Direkt-Link zu einem Bild (JPG/PNG) — z.B. von Wikipedia oder der Hochschul-Website</div>
+        </div>
+        <div class="fr">
+          <label>Adresse (für automatische Koordinaten)</label>
+          <input class="fc" type="text" id="f-address" placeholder="z.B. Hochschule Esslingen"/>
+          <div class="geo-row">
+            <button id="geo-btn" onclick="geocode()">Standort suchen</button>
+            <span id="geo-status">Tipp: Namen eingeben und suchen.</span>
+          </div>
+        </div>
+        <div class="fr2">
+          <div class="fr"><label>Breitengrad *</label><input class="fc" type="number" id="f-lat" placeholder="48.7450" step="0.0001"/></div>
+          <div class="fr"><label>Längengrad *</label><input class="fc" type="number" id="f-lng" placeholder="9.1070" step="0.0001"/></div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Klassifizierung</div>
+        <div class="fr"><label>Kategorien</label><div class="cat-tree" id="f-cat-tree"></div><div class="fhint">Mehrere Kategorien möglich</div></div>
+        <div class="fr2">
+          <div class="fr"><label>Priorität</label>
+            <select class="fc" id="f-prio">
+              <option value="main">⭐ Hauptziel</option>
+              <option value="watch">👁 Beobachten</option>
+              <option value="check" selected>❓ Prüfen</option>
+            </select>
+          </div>
+          <div class="fr"><label>Region</label>
+            <select class="fc" id="f-region">
+              <option value="europe">Europa</option>
+              <option value="americas">Amerika</option>
+              <option value="asia">Asien</option>
+              <option value="oceania">Ozeanien</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Details</div>
+        <div class="fr"><label>Studienprogramme</label><input class="fc" type="text" id="f-progs" placeholder="Elektrotechnik, Akustik …"/><div class="fhint">Mit Komma trennen</div></div>
+        <div class="fr"><label>Relevanz für d&amp;b</label><textarea class="fc" id="f-rel" placeholder="Warum ist diese Hochschule interessant?"></textarea></div>
+        <div class="fr"><label>Kooperationsmöglichkeiten</label><textarea class="fc" id="f-coop" placeholder="Duales Studium, Praktika, Abschlussarbeiten …"></textarea></div>
+        <div class="fr"><label>Interne Notizen</label><textarea class="fc" id="f-notes" placeholder="Gesprächsnotizen, offene Fragen, persönliche Eindrücke …" style="min-height:72px;"></textarea></div>
+      </div>
+
+      <!-- Beziehung & Kontakt -->
+      <div class="m-sec">
+        <div class="m-sec-title">Beziehung &amp; Kontakt</div>
+        <div class="fr2">
+          <div class="fr">
+            <label>Beziehungsstatus</label>
+            <select class="fc" id="f-relstatus">
+              <option value="none">🔍 Noch kein Kontakt</option>
+              <option value="contacted">📧 Kontakt hergestellt</option>
+              <option value="meeting">🤝 Gespräch geführt</option>
+              <option value="coop">🔗 Kooperation laufend</option>
+              <option value="partner">⭐ Strategischer Partner</option>
+            </select>
+          </div>
+          <div class="fr">
+            <label>Letzter Kontakt</label>
+            <input class="fc" type="date" id="f-lastcontact"/>
+          </div>
+        </div>
+        <div style="font-size:9px;font-weight:800;color:var(--n400);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px;margin-top:4px;">Ansprechpartner 1</div>
+        <div class="fr"><input class="fc" type="text" id="f-cp-name" placeholder="Name, z.B. Prof. Dr. Müller"/></div>
+        <div class="fr2">
+          <div class="fr"><input class="fc" type="text" id="f-cp-role" placeholder="Rolle, z.B. Studiendekan"/></div>
+          <div class="fr"><input class="fc" type="email" id="f-cp-email" placeholder="E-Mail"/></div>
+        </div>
+        <div style="font-size:9px;font-weight:800;color:var(--n400);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px;margin-top:8px;">Ansprechpartner 2 <span style="font-weight:500;text-transform:none;letter-spacing:0;">(optional)</span></div>
+        <div class="fr"><input class="fc" type="text" id="f-cp2-name" placeholder="Name"/></div>
+        <div class="fr2">
+          <div class="fr"><input class="fc" type="text" id="f-cp2-role" placeholder="Rolle"/></div>
+          <div class="fr"><input class="fc" type="email" id="f-cp2-email" placeholder="E-Mail"/></div>
+        </div>
+      </div>
+
+      <!-- Intern d&b -->
+      <div class="m-sec">
+        <div class="m-sec-title">Intern · d&amp;b audiotechnik</div>
+        <div class="fr2">
+          <div class="fr"><label>Zuständig bei d&amp;b</label><input class="fc" type="text" id="f-intern-contact" placeholder="z.B. Max Mustermann"/></div>
+          <div class="fr"><label>Abteilung</label>
+            <select class="fc" id="f-intern-dept">
+              <option value="">– keine –</option>
+              <option value="HR">HR / People</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Sales">Sales</option>
+              <option value="R&D">R&amp;D / Engineering</option>
+              <option value="Management">Management</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr2">
+          <div class="fr"><label>Budget geplant</label>
+            <select class="fc" id="f-budget">
+              <option value="">Nicht festgelegt</option>
+              <option value="yes">Ja ✓</option>
+              <option value="no">Nein</option>
+            </select>
+          </div>
+          <div class="fr"><label>Internes Potential</label><input class="fc" type="text" id="f-intern-note" placeholder="z.B. Sehr hoch — strategisch"/></div>
+        </div>
+      </div>
+
+      <!-- Kann-Felder -->
+      <div class="m-sec">
+        <div class="m-sec-title">Weitere Informationen <span style="font-size:9px;font-weight:600;background:var(--n200);color:var(--n500);padding:2px 7px;border-radius:20px;margin-left:4px;">KANN</span></div>
+        <div class="fr2">
+          <div class="fr"><label>Studierende im Fachbereich</label><input class="fc" type="text" id="f-students" placeholder="z.B. ~1.200"/></div>
+          <div class="fr"><label>Lehrsprache</label><input class="fc" type="text" id="f-language" placeholder="z.B. Deutsch, Englisch"/></div>
+        </div>
+        <div class="fr">
+          <label>Abschlussarten</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--n700);cursor:pointer;"><input type="checkbox" id="f-deg-ba" style="accent-color:var(--p)"> Bachelor</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--n700);cursor:pointer;"><input type="checkbox" id="f-deg-ma" style="accent-color:var(--p)"> Master</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--n700);cursor:pointer;"><input type="checkbox" id="f-deg-phd" style="accent-color:var(--p)"> PhD/Promotion</label>
+          </div>
+        </div>
+        <div class="fr2">
+          <div class="fr"><label>Nächste geplante Aktion</label><input class="fc" type="text" id="f-nextaction" placeholder="z.B. Erstkontakt per Mail"/></div>
+          <div class="fr"><label>Datum</label><input class="fc" type="date" id="f-nextdate"/></div>
+        </div>
+      </div>
+
+      <div class="m-btns">
+        <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+        <button class="btn-save" onclick="saveUni()">Speichern</button>
+      </div>
+    </div>
+  </div>
+  <!-- Onboarding Modal -->
+  <div id="onboarding-overlay" onclick="if(event.target===this)closeOnboarding()">
+    <div id="onboarding-modal">
+      <div class="ob-header">
+        <div>
+          <h2>Willkommen 👋</h2>
+          <p>Young Talents Hochschulkarte — kurze Einführung</p>
+        </div>
+        <button class="ob-close" onclick="closeOnboarding()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ob-steps">
+        <div class="ob-step">
+          <div class="ob-icon">🗺️</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Karte navigieren</div>
+            <div class="ob-step-desc">Zoome mit dem Mausrad oder den +/– Buttons. Nahe Hochschulen werden beim Herauszoomen automatisch zu Gruppen zusammengefasst — klicke auf eine Gruppe um hineinzuzoomen.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-icon">🔍</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Hover &amp; Klick</div>
+            <div class="ob-step-desc">Fahre mit der Maus über einen Marker um eine Kurzübersicht zu sehen. Klicke direkt darauf um das vollständige Dashboard zu öffnen. <kbd>ESC</kbd> schließt alle Panels.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-icon">⚙️</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Filter nutzen</div>
+            <div class="ob-step-desc">Das weiße Panel links auf der Karte filtert nach Priorität, Region und Kategorie. Die Suchleiste oben durchsucht Namen und Städte — Treffer werden auf der Karte markiert.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-icon">📋</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Listenansicht</div>
+            <div class="ob-step-desc">Über den Button <strong>Listenansicht</strong> im Header siehst du alle Hochschulen als Karten — sortierbar nach Name, Priorität oder Region. Von dort gelangt man ebenfalls ins Dashboard.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-icon">➕</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Hochschule hinzufügen</div>
+            <div class="ob-step-desc">Klicke auf <strong>Hinzufügen</strong>. Du kannst den Standort automatisch suchen lassen (Nominatim) oder Koordinaten manuell eingeben. Pflichtfelder sind Name und Koordinaten.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-icon">💾</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Daten exportieren &amp; importieren</div>
+            <div class="ob-step-desc">Alle Daten werden lokal im Browser gespeichert. Über das Zahnrad-Menü kannst du die Daten als JSON exportieren (Backup) oder eine JSON-Datei importieren um Daten zu übertragen.</div>
+          </div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-icon">🎨</div>
+          <div class="ob-step-body">
+            <div class="ob-step-title">Farben &amp; Symbole verstehen</div>
+            <div class="ob-step-desc">Marker-Größe = Priorität: große Nadel = Hauptziel, mittel = Beobachten, klein = Prüfen. Alle Nadeln sind einheitlich dunkel. Der Attraktivitäts-Score (0–100) bewertet strategische Passung, Beziehungsreife und Priorität.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Custom Confirm -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <h3 id="confirm-title"></h3>
+    <p id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">Abbrechen</button>
+      <button id="confirm-ok" class="danger" onclick="confirmOkClick()">Bestätigen</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <!-- Pin-Größen Legende -->
+  <span class="leg">
+    <svg width="10" height="14" viewBox="0 0 32 46" xmlns="http://www.w3.org/2000/svg"><path d="M16 1C8.82 1 3 6.82 3 14c0 10.2 13 31 13 31S29 24.2 29 14C29 6.82 23.18 1 16 1z" fill="rgba(255,255,255,0.7)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/></svg>
+    Hauptziel
+  </span>
+  <span class="leg">
+    <svg width="8" height="11" viewBox="0 0 32 46" xmlns="http://www.w3.org/2000/svg"><path d="M16 1C8.82 1 3 6.82 3 14c0 10.2 13 31 13 31S29 24.2 29 14C29 6.82 23.18 1 16 1z" fill="rgba(255,255,255,0.5)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/></svg>
+    Beobachten
+  </span>
+  <span class="leg">
+    <svg width="6" height="9" viewBox="0 0 32 46" xmlns="http://www.w3.org/2000/svg"><path d="M16 1C8.82 1 3 6.82 3 14c0 10.2 13 31 13 31S29 24.2 29 14C29 6.82 23.18 1 16 1z" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/></svg>
+    Prüfen
+  </span>
+  <span class="leg-sep"></span>
+  <span class="leg"><span class="leg-dot" style="background:#DB2777"></span>Audio-Technik</span>
+  <span class="leg"><span class="leg-dot" style="background:#EA580C"></span>Akustik</span>
+  <span class="leg"><span class="leg-dot" style="background:#D97706"></span>Ingenieurwesen</span>
+  <span class="leg"><span class="leg-dot" style="background:#2563EB"></span>Informatik/IT</span>
+  <span class="leg"><span class="leg-dot" style="background:#16A34A"></span>BWL</span>
+  <span class="leg"><span class="leg-dot" style="background:#7C3AED"></span>Forschung</span>
+  <span class="leg-sep"></span>
+  <span class="osm-c">&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &nbsp;·&nbsp; Young Talents Hochschulkarte &nbsp;·&nbsp; d&amp;b audiotechnik &amp; HfT Stuttgart &nbsp;·&nbsp; 2026</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script>
+/* ══ CONFIG ════════════════════════════════════════════════════ */
+var CAT = {
+  'audio-technik':  { label:'Audio-Technik',     group:'TECH',     color:'#DB2777' },
+  'akustik':        { label:'Akustik',            group:'TECH',     color:'#EA580C' },
+  'ingenieurwesen': { label:'Ingenieurwesen',     group:'TECH',     color:'#D97706' },
+  'it':             { label:'Informatik/IT',      group:'TECH',     color:'#2563EB' },
+  'bwl':            { label:'BWL/Management',     group:'BUSINESS', color:'#16A34A' },
+  'projmgmt':       { label:'Projektmanagement',  group:'BUSINESS', color:'#7C3AED' },
+  'marketing':      { label:'Marketing/Vertrieb', group:'BUSINESS', color:'#0891B2' },
+  'audio-forsch':   { label:'Audio-Forschung',    group:'RESEARCH', color:'#CA8A04' },
+  'innovation':     { label:'Innovation Labs',    group:'RESEARCH', color:'#0284C7' }
+};
+var PRIO = {
+  main:  { label:'⭐ Hauptziel',  cls:'pb-main'  },
+  watch: { label:'👁 Beobachten', cls:'pb-watch' },
+  check: { label:'❓ Prüfen',     cls:'pb-check' }
+};
+var REGION = { europe:'Europa', americas:'Amerika', asia:'Asien', oceania:'Ozeanien' };
+var REL = {
+  none:      { label:'Noch kein Kontakt',    cls:'rel-none',      dot:'rgba(255,255,255,0.3)' },
+  contacted: { label:'Kontakt hergestellt',  cls:'rel-contacted', dot:'#93C5FD' },
+  meeting:   { label:'Gespräch geführt',     cls:'rel-meeting',   dot:'#FCD34D' },
+  coop:      { label:'Kooperation laufend',  cls:'rel-coop',      dot:'#6EE7B7' },
+  partner:   { label:'Strategischer Partner',cls:'rel-partner',   dot:'#C4B5FD' }
+};
+
+var UNIS=[], map, clusterGroup, markerMap={};
+var filter={ cats:[], prio:'all', region:'all', relStatus:'all', search:'' };
+var currentId=null, editingId=null, nextId=200, listOpen=false;
+var listCatFilter=[], listView='grid', listTopFilter=false;
+
+/* ══ DATA ══════════════════════════════════════════════════════ */
+function initData() {
+  var s = localStorage.getItem('unis-v8');
+  if (s) { try { UNIS=JSON.parse(s); } catch(e){} }
+  if (!UNIS.length) UNIS = [
+    { id:1, name:"Hochschule Esslingen", city:"Esslingen am Neckar, Deutschland", region:"europe", lat:48.7401, lng:9.3093, categories:["ingenieurwesen","it"], prio:"main", programs:["Elektrotechnik","Mechatronik","Informatik","Maschinenbau"], relevance:"Starke Ingenieurs- und Technik-Studiengänge im direkten regionalen Einzugsgebiet. Sehr gute Nähe zum d&b Werk in Backnang (~20 km). Hervorragendes Potenzial für duale Studienmodelle.", cooperations:"Duales Studium (Elektrotechnik & Mechatronik), Bachelorarbeiten zu PA-Systemtechnik, Praktika in der F&E-Abteilung.", website:"https://www.hs-esslingen.de", logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/HochschuleEsslingen_Logo_4c_DE.svg", photoUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Hochschule_Esslingen_Campus_Stadtmitte.jpg/1280px-Hochschule_Esslingen_Campus_Stadtmitte.jpg", notes:"Noch zu klären: Ansprechpartner im Fachbereich ET/ME identifizieren.",
+      relStatus:"meeting", lastContact:"2025-03-15", contactPerson:{name:"–",role:"–",email:""},
+      students:"~8.500", language:"Deutsch", degreeTypes:["Bachelor","Master"], nextAction:"Terminvereinbarung für Campuspräsentation", nextActionDate:"2025-07-01" },
+    { id:2, name:"TU München", city:"München, Deutschland", region:"europe", lat:48.2638, lng:11.6684, categories:["audio-technik","ingenieurwesen"], prio:"main", programs:["Elektrotechnik","Physik","Informatik"], relevance:"Renommierte Technische Universität mit Fokus auf Audio und Akustik. Topzugang zu innovativer Forschung im Audio-Bereich.", cooperations:"Gemeinsame Forschungsprojekte zu Raumakustik und DSP, Masterarbeiten, Young Talents Programm.", website:"https://www.tum.de", logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/TU_Muenchen_Logo.svg", photoUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/TU_M%C3%BCnchen_-_Hauptgeb%C3%A4ude_-_2014.jpg/1280px-TU_M%C3%BCnchen_-_Hauptgeb%C3%A4ude_-_2014.jpg", notes:"",
+      relStatus:"contacted", lastContact:"2025-01-10", contactPerson:{name:"–",role:"Lehrstuhl Elektroakustik",email:""},
+      students:"~45.000", language:"Deutsch / Englisch", degreeTypes:["Bachelor","Master","PhD"], nextAction:"Erstgespräch mit Lehrstuhl vereinbaren", nextActionDate:"" },
+    { id:3, name:"HfT Stuttgart", city:"Stuttgart, Deutschland", region:"europe", lat:48.7784, lng:9.1802, categories:["akustik","ingenieurwesen"], prio:"main", programs:["Angewandte Akustik","Elektrotechnik","Informationstechnik"], relevance:"Direkter strategischer Partner. Spezialisierter Fokus auf Akustik und Audiotechnik – ideale Ausgangslage für das Young Talents Programm.", cooperations:"Laufende Partnerschaft, Praktika & Werkstudenten, gemeinsame Lehrveranstaltungen, Werksexkursionen.", website:"https://www.hft-stuttgart.de", logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/Logo-HFT-Stuttgart.svg", photoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/Bibliothek_HFT.jpg", notes:"Hauptansprechpartner noch identifizieren. Erstes strukturiertes Gespräch für Q3 2025 geplant.",
+      relStatus:"partner", lastContact:"2025-05-20", contactPerson:{name:"–",role:"Kooperationsbeauftragter",email:""},
+      students:"~5.100", language:"Deutsch", degreeTypes:["Bachelor","Master"], nextAction:"Jahresgespräch Partnerschaft", nextActionDate:"2025-09-01" },
+    { id:4, name:"Berklee College of Music", city:"Boston, USA", region:"americas", lat:42.3466, lng:-71.0870, categories:["audio-technik","audio-forsch"], prio:"watch", programs:["Music Production","Music Business","Sound Design"], relevance:"Weltführend in professioneller Musikproduktion. Hohe Dichte an audio-affinen Talenten mit Bezug zu Live-Sound.", cooperations:"Produktvorstellungen und Workshops, Kontakt zu Dozenten, Bewerbung des Traineeprogramms.", website:"https://www.berklee.edu", logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/Berklee_College_of_Music_logo_and_wordmark.svg", photoUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Berklee_College_of_Music_-_160_Mass_Ave.jpg/1280px-Berklee_College_of_Music_-_160_Mass_Ave.jpg", notes:"",
+      relStatus:"contacted", lastContact:"2024-11-05", contactPerson:{name:"–",role:"–",email:""},
+      students:"~6.000", language:"Englisch", degreeTypes:["Bachelor","Master"], nextAction:"Follow-up nach Messe", nextActionDate:"" },
+    { id:5, name:"KTH Royal Institute of Technology", city:"Stockholm, Schweden", region:"europe", lat:59.3498, lng:18.0710, categories:["audio-forsch","ingenieurwesen","innovation"], prio:"watch", programs:["Sound and Music","Electrical Engineering","Mechatronics"], relevance:"Skandinaviens führende technische Hochschule. Stark in Akustikforschung und innovativer Ingenieursausbildung.", cooperations:"Forschungskooperationen zu Wellenfeldsynthese, Austauschprogramme mit deutschen Hochschulen.", website:"https://www.kth.se", logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/KTH_Royal_Institute_of_Technology_logo.svg", photoUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/KTH_Campus_-_Stockholms_universitetsbibliotek.jpg/1280px-KTH_Campus_-_Stockholms_universitetsbibliotek.jpg", notes:"",
+      relStatus:"none", lastContact:"", contactPerson:{name:"",role:"",email:""},
+      students:"~13.000", language:"Schwedisch / Englisch", degreeTypes:["Bachelor","Master","PhD"], nextAction:"Recherche Ansprechpartner", nextActionDate:"" },
+    { id:6, name:"Peking University", city:"Peking, China", region:"asia", lat:39.9996, lng:116.3261, categories:["it","innovation"], prio:"check", programs:["Computer Science","Information Technology"], relevance:"Zugang zum wachsenden chinesischen Markt. Potenzial für Technologiekooperationen im IT- und DSP-Bereich.", cooperations:"Teilnahme an Karrieremessen, Kontakt zur Fachschaft, mögliche Masterthesen zu Netzwerkaudio.", website:"https://english.pku.edu.cn", logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/Peking_University_seal.svg", photoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/Weiming_Lake,_Peking_University,_2011042206.jpg", notes:"",
+      relStatus:"none", lastContact:"", contactPerson:{name:"",role:"",email:""},
+      students:"–", language:"Chinesisch / Englisch", degreeTypes:["Bachelor","Master","PhD"], nextAction:"–", nextActionDate:"" }
+  ];
+  saveData();
+}
+function saveData() { localStorage.setItem('unis-v8', JSON.stringify(UNIS)); }
+
+/* ══ FILTER PANEL ══════════════════════════════════════════════ */
+var CAT_GROUPS = {TECH:'Technik', BUSINESS:'Business', RESEARCH:'Forschung'};
+var activeCatTab = 'TECH';
+
+function buildFilterPanel() {
+  /* Tab bar */
+  var tabBar = document.getElementById('cat-tab-bar'); tabBar.innerHTML='';
+  Object.keys(CAT_GROUPS).forEach(grp=>{
+    var btn=document.createElement('button');
+    btn.className='cat-tab'+(grp===activeCatTab?' on':'');
+    btn.textContent=CAT_GROUPS[grp];
+    btn.onclick=function(){ activeCatTab=grp; buildFilterPanel(); };
+    tabBar.appendChild(btn);
+  });
+  /* Pills for active group */
+  var c=document.getElementById('fp-cats'); c.innerHTML='';
+  Object.keys(CAT).filter(k=>CAT[k].group===activeCatTab).forEach(id=>{
+    var cat=CAT[id];
+    var isOn=filter.cats.includes(id);
+    var btn=document.createElement('button');
+    btn.className='cp'+(isOn?' on':'');
+    btn.style.background=isOn?cat.color:'';
+    btn.style.borderColor=isOn?cat.color:'';
+    btn.innerHTML='<span class="cp-dot" style="background:'+(isOn?'rgba(255,255,255,0.85)':cat.color)+'"></span>'+cat.label;
+    btn.onclick=function(){
+      if(filter.cats.includes(id)) filter.cats=filter.cats.filter(x=>x!==id);
+      else filter.cats.push(id);
+      buildFilterPanel(); applyFilter(); updateResetBtn();
+    };
+    c.appendChild(btn);
+  });
+}
+
+function updateCatFilter() { applyFilter(); updateResetBtn(); }
+function clearAllFilters() {
+  filter={cats:[],prio:'all',region:'all',relStatus:'all',search:''};
+  document.getElementById('search-input').value='';
+  document.getElementById('search-clear').classList.remove('visible');
+  document.getElementById('region-sel').value='all';
+  document.querySelectorAll('.pp').forEach(b=>b.classList.toggle('on',b.dataset.prio==='all'));
+  document.querySelectorAll('.rp').forEach(b=>b.classList.toggle('on',b.dataset.rel==='all'));
+  buildFilterPanel(); applyFilter(); updateResetBtn();
+}
+function clearSearch() {
+  document.getElementById('search-input').value='';
+  document.getElementById('search-clear').classList.remove('visible');
+  filter.search=''; applyFilter(); updateResetBtn();
+}
+function updateResetBtn() {
+  var count=[
+    filter.cats.length>0?filter.cats.length:0,
+    filter.prio!=='all'?1:0,
+    filter.region!=='all'?1:0,
+    filter.relStatus!=='all'?1:0,
+    filter.search?1:0
+  ].reduce(function(a,b){return a+b;},0);
+  var has=count>0;
+  document.getElementById('fp-reset').classList.toggle('on',has);
+  var lbl=document.getElementById('fp-lbl');
+  if(lbl) lbl.textContent=has?'Filter · '+count+' aktiv':'Filter';
+}
+
+/* ══ MARKERS + CLUSTERING ══════════════════════════════════════ */
+/* Pin dimensions per priority: [width, height] */
+var PIN_SIZES = { main:[32,46], watch:[25,36], check:[20,29] };
+
+function makeIcon(prio, catId, pulse) {
+  var s = PIN_SIZES[prio] || PIN_SIZES.check;
+  var w = s[0], h = s[1];
+  var animClass = pulse ? ' marker-search-hit' : '';
+  /* Uniform dark pin — circle radius scales with size */
+  var cr = prio==='main' ? 7 : prio==='watch' ? 5.5 : 4.2;
+  var cy = prio==='main' ? 14 : prio==='watch' ? 13 : 11;
+  /* viewBox fixed at 32×46; scale via width/height attrs */
+  var svg =
+    '<svg width="'+w+'" height="'+h+'" viewBox="0 0 32 46" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 3px 5px rgba(0,0,0,0.32));">'
+    +'<path d="M16 1C8.82 1 3 6.82 3 14c0 10.2 13 31 13 31S29 24.2 29 14C29 6.82 23.18 1 16 1z" fill="#1e293b" stroke="white" stroke-width="1.8"/>'
+    +'<circle cx="16" cy="'+cy+'" r="'+cr+'" fill="white" opacity="0.92"/>'
+    +'</svg>';
+  return L.divIcon({
+    className: '',
+    html: '<div class="marker-inner'+animClass+'" style="cursor:pointer;">'+svg+'</div>',
+    iconSize: [w, h],
+    iconAnchor: [w/2, h],
+    popupAnchor: [0, -h-4]
+  });
+}
+
+/* ── HOVER CARD ─────────────────────────────────────────────── */
+var hoverCard = document.getElementById('hover-card') || null;
+var hoverHideTimeout = null;
+
+function makeHoverHTML(u) {
+  var p=PRIO[u.prio||'check'];
+  var score=calcScore(u);
+  var chips=(u.categories||[]).slice(0,2).map(c=>{
+    var cat=CAT[c]; if(!cat) return '';
+    return '<span class="uc-chip"><span class="uc-chip-dot" style="background:'+cat.color+'"></span>'+cat.label+'</span>';
+  }).join('');
+  var preview=(u.relevance||'').substring(0,100)+((u.relevance||'').length>100?'…':'');
+  var rel=REL[u.relStatus||'none']||REL.none;
+  return '<div class="hc">'
+    +'<div class="hc-bar" style="background:'+((CAT[(u.categories||[])[0]]||{}).color||'#5B21B6')+'"></div>'
+    +'<div class="hc-body">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">'
+        +'<div class="hc-name" style="margin-bottom:0;">'+u.name+'</div>'
+        +'<span class="score-chip-sm" style="background:'+scoreBg(score)+';color:'+scoreColor(score)+';border:1px solid '+scoreBorder(score)+';flex-shrink:0;margin-top:2px;">'+score+'</span>'
+      +'</div>'
+      +'<div class="hc-city"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'+(u.city||'')+'</div>'
+      +'<div class="hc-meta"><span class="pb '+p.cls+'">'+p.label+'</span><span class="rel-badge '+rel.cls+'" style="font-size:9px;padding:2px 7px;"><span class="rel-dot" style="background:'+rel.dot+'"></span>'+rel.label+'</span>'+chips+'</div>'
+      +(preview?'<div class="hc-preview">'+preview+'</div>':'')
+      +'<div class="hc-hint"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Klicken für Dashboard</div>'
+    +'</div></div>';
+}
+
+function showHoverCard(u, latlng) {
+  clearTimeout(hoverHideTimeout);
+  if (!hoverCard) { hoverCard = document.getElementById('hover-card'); }
+  if (!hoverCard) return;
+  hoverCard.innerHTML = makeHoverHTML(u);
+
+  var pt = map.latLngToContainerPoint(latlng);
+  var cardW = 272, cardH = 230;
+  var mapEl = document.getElementById('app-body');
+  var mapRect = mapEl.getBoundingClientRect();
+
+  /* pt.y = bottom tip of pin (iconAnchor). Offset by full pin height upward. */
+  var pinH = (PIN_SIZES[u.prio||'check'] || PIN_SIZES.check)[1];
+
+  var left = pt.x - cardW / 2;
+  var top  = pt.y - pinH - cardH - 12;
+
+  left = Math.max(10, Math.min(left, mapRect.width - cardW - 10));
+  if (top < 10) top = pt.y + 8; // flip below if too close to top edge
+
+  hoverCard.style.left = left + 'px';
+  hoverCard.style.top  = top  + 'px';
+  hoverCard.classList.add('visible');
+}
+
+function hideHoverCard(delay) {
+  clearTimeout(hoverHideTimeout);
+  hoverHideTimeout = setTimeout(function() {
+    if (hoverCard) hoverCard.classList.remove('visible');
+  }, delay || 120);
+}
+
+function addMarker(u, pulse) {
+  var pc=(u.categories||[])[0]||'it';
+  var m=L.marker([u.lat,u.lng],{icon:makeIcon(u.prio||'check',pc,pulse)});
+
+  /* Hover → show card, scale marker */
+  m.on('mouseover', function(e) {
+    clearTimeout(hoverHideTimeout);
+    var el=this._icon&&this._icon.querySelector('.marker-inner');
+    if(el) el.style.transform='scale(1.35)';
+    showHoverCard(u, e.latlng);
+  });
+  m.on('mouseout', function() {
+    var el=this._icon&&this._icon.querySelector('.marker-inner');
+    if(el) el.style.transform='';
+    hideHoverCard(140);
+  });
+
+  /* Click → open dashboard directly */
+  m.on('click', function() {
+    hideHoverCard(0);
+    openDb(u.id);
+  });
+
+  markerMap[u.id]={marker:m, u:u};
+  return m; // caller decides whether to addLayer or batch via addLayers
+}
+
+/* ══ FILTER APPLY ══════════════════════════════════════════════ */
+function applyFilter(highlight) {
+  var count=0, bounds=[];
+  var searchTerm=filter.search.toLowerCase();
+
+  Object.keys(markerMap).forEach(k=>{
+    var e=markerMap[k], u=e.u;
+    var catOk=!filter.cats.length||filter.cats.some(c=>(u.categories||[]).includes(c));
+    var prioOk=filter.prio==='all'||u.prio===filter.prio;
+    var regOk=filter.region==='all'||u.region===filter.region;
+    var relOk=filter.relStatus==='all'||(u.relStatus||'none')===filter.relStatus;
+    var searchOk=!searchTerm||u.name.toLowerCase().includes(searchTerm)||(u.city||'').toLowerCase().includes(searchTerm)||(u.relevance||'').toLowerCase().includes(searchTerm)||(u.notes||'').toLowerCase().includes(searchTerm)||(u.cooperations||'').toLowerCase().includes(searchTerm);
+    var show=catOk&&prioOk&&regOk&&relOk&&searchOk;
+
+    if (show) {
+      if (!clusterGroup.hasLayer(e.marker)) {
+        /* Re-add with pulse animation if highlighting */
+        var pc=(u.categories||[])[0]||'it';
+        e.marker.setIcon(makeIcon(u.prio||'check', pc, highlight&&!!searchTerm));
+        clusterGroup.addLayer(e.marker);
+        /* Remove pulse class after animation */
+        if (highlight&&searchTerm) setTimeout(()=>{
+          var el=e.marker._icon&&e.marker._icon.querySelector('.marker-inner');
+          if(el) el.classList.remove('marker-search-hit');
+        }, 700);
+      }
+      count++;
+      bounds.push([u.lat, u.lng]);
+    } else {
+      if (clusterGroup.hasLayer(e.marker)) {
+        if(e.marker.isPopupOpen()) e.marker.closePopup();
+        clusterGroup.removeLayer(e.marker);
+      }
+    }
+  });
+
+  var badge=document.getElementById('count-badge');
+  badge.textContent=count+' Hochschule'+(count!==1?'n':'');
+  badge.style.background=count===0?'var(--danger-bg)':'var(--p-pale)';
+  badge.style.color=count===0?'var(--danger)':'var(--p-l)';
+  badge.style.borderColor=count===0?'rgba(220,38,38,0.25)':'var(--p-b)';
+
+  /* If search active and results found: fly to bounds */
+  if (highlight && searchTerm && bounds.length > 0 && bounds.length < 8) {
+    if (bounds.length===1) {
+      map.flyTo(bounds[0], Math.max(map.getZoom(), 10), {animate:true, duration:0.8});
+    } else {
+      map.flyToBounds(bounds, {padding:[60,60], maxZoom:10, animate:true, duration:0.8});
+    }
+  }
+}
+
+/* ══ DASHBOARD ══════════════════════════════════════════════════ */
+function countUp(el, target, duration) {
+  if (!el) return;
+  var startTime=null;
+  function step(ts) {
+    if (!el.parentNode) return; // element removed from DOM — stop
+    if (!startTime) startTime=ts;
+    var progress=Math.min((ts-startTime)/duration,1);
+    var ease=1-Math.pow(1-progress,3);
+    el.textContent=Math.round(ease*target);
+    if (progress<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function openDb(id) {
+  var u=UNIS.find(x=>x.id===id); if(!u) return;
+  currentId=id;
+  hideHoverCard(0);
+
+  document.getElementById('db-name').textContent=u.name;
+
+  /* Logo */
+  var logoWrap=document.getElementById('db-logo-wrap');
+  var logoEl=document.getElementById('db-logo');
+  var logoSrc=u.logoUrl||(u.website?(function(){try{return 'https://logo.clearbit.com/'+new URL(u.website).hostname;}catch(e){return '';}}()):'');
+  if(logoSrc){
+    logoEl.src=logoSrc;
+    logoEl.onerror=function(){ logoWrap.className='hidden'; };
+    logoWrap.className='';
+  } else { logoWrap.className='hidden'; }
+  document.getElementById('db-city').textContent=u.city||'';
+  document.getElementById('db-reg').textContent=REGION[u.region]||u.region||'';
+
+  var p=PRIO[u.prio||'check'];
+  var pb=document.getElementById('db-prio-badge');
+  pb.textContent=p.label; pb.className='pb '+p.cls;
+
+  /* Score */
+  var score=calcScore(u);
+  var dist=calcDistance(u);
+  var distTxt=dist<50?'< 50 km':dist<200?dist+' km':dist<2000?dist+' km':'~'+Math.round(dist/100)*100+' km';
+  var distColor=dist<100?'rgba(16,185,129,0.8)':dist<1000?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.3)';
+
+  /* Stats with count-up */
+  var catCount=(u.categories||[]).length, progCount=(u.programs||[]).length;
+  document.getElementById('db-stats').innerHTML=
+    '<div class="db-stat" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.18);min-width:100px;">'
+      +'<div class="db-stat-val" id="db-sv-score" style="font-size:32px;letter-spacing:-2px;">0</div>'
+      +'<div class="db-stat-lbl">Score</div>'
+      +'<div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:3px;font-weight:600;">'+scoreLabel(score)+'</div>'
+    +'</div>'
+    +'<div class="db-stat"><div class="db-stat-val" id="db-sv-cat">0</div><div class="db-stat-lbl">Kategorien</div></div>'
+    +'<div class="db-stat"><div class="db-stat-val" id="db-sv-prog">0</div><div class="db-stat-lbl">Programme</div></div>'
+    +'<div class="db-stat" style="min-width:110px;">'
+      +'<div style="font-size:13px;font-weight:800;color:var(--n0);letter-spacing:-0.3px;">'+distTxt+'</div>'
+      +'<div class="db-stat-lbl">vom d&amp;b HQ</div>'
+      +'<div style="font-size:8.5px;color:rgba(255,255,255,0.35);margin-top:2px;">Backnang</div>'
+    +'</div>';
+  setTimeout(()=>{
+    countUp(document.getElementById('db-sv-score'), score, 700);
+    countUp(document.getElementById('db-sv-cat'), catCount, 500);
+    countUp(document.getElementById('db-sv-prog'), progCount, 600);
+  }, 100);
+
+  /* Score Breakdown — wird unter den Stats im Hero angezeigt */
+  var existBreak=document.getElementById('db-score-break');
+  if(existBreak) existBreak.remove();
+  var breakDiv=document.createElement('div'); breakDiv.id='db-score-break';
+  breakDiv.innerHTML=scoreBreakdownHTML(u);
+  document.getElementById('db-stats').after(breakDiv);
+
+  /* Categories */
+  var cEl=document.getElementById('db-cats'); cEl.innerHTML='';
+  (u.categories||[]).forEach(cid=>{
+    var cat=CAT[cid]; if(!cat)return;
+    var ch=document.createElement('div'); ch.className='db-chip';
+    ch.innerHTML='<span class="db-chip-dot" style="background:'+cat.color+'"></span>'+cat.label;
+    cEl.appendChild(ch);
+  });
+
+  /* Programs */
+  var pEl=document.getElementById('db-progs'); pEl.innerHTML='';
+  (u.programs||[]).forEach(pg=>{var t=document.createElement('div');t.className='db-prog';t.textContent=pg;pEl.appendChild(t);});
+
+  document.getElementById('db-rel').textContent=u.relevance||'–';
+  document.getElementById('db-coop').textContent=u.cooperations||'–';
+
+  /* Photo — neben dem Hero, gleiche Höhe */
+  var photoWrap=document.getElementById('db-photo-wrap');
+  var photoEl=document.getElementById('db-photo');
+  var photoLabel=document.getElementById('db-photo-label');
+  if(u.photoUrl){
+    photoEl.src=u.photoUrl;
+    photoEl.onerror=function(){ photoWrap.className='no-photo'; };
+    photoLabel.textContent=u.name;
+    photoWrap.className='has-photo';
+    /* Höhe des Fotos = Höhe des Hero-Balkens */
+    requestAnimationFrame(function(){
+      var heroH=document.getElementById('db-hero').offsetHeight;
+      if(heroH>0) photoWrap.style.height=heroH+'px';
+    });
+  } else {
+    photoWrap.className='no-photo';
+    photoWrap.style.height='';
+  }
+
+  /* Beziehungsstatus */
+  var rel=REL[u.relStatus||'none']||REL.none;
+  var rb=document.getElementById('db-rel-badge');
+  rb.className='rel-badge '+rel.cls;
+  rb.innerHTML='<span class="rel-dot" style="background:'+rel.dot+'"></span>'+rel.label;
+
+  /* Letzter Kontakt */
+  var lc=document.getElementById('db-last-contact');
+  if(u.lastContact){
+    var d=new Date(u.lastContact);
+    lc.textContent='Letzter Kontakt: '+d.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'});
+  } else { lc.textContent=''; }
+
+  /* Ansprechpartner (bis zu 2) */
+  var cw=document.getElementById('db-contact-wrap'); cw.innerHTML='';
+  function contactCardHTML(cp){
+    if(!cp||!cp.name||cp.name==='–'||cp.name==='') return '';
+    return '<div class="contact-card">'
+      +'<div class="contact-name">'+cp.name+'</div>'
+      +(cp.role?'<div class="contact-role">'+cp.role+'</div>':'')
+      +(cp.email?'<a class="contact-email" href="mailto:'+cp.email+'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>'+cp.email+'</a>':'')
+    +'</div>';
+  }
+  var c1=contactCardHTML(u.contactPerson); var c2=contactCardHTML(u.contactPerson2);
+  if(c1||c2){
+    cw.innerHTML='<div style="display:flex;flex-direction:column;gap:8px;">'+(c1||'')+(c2||'')+'</div>';
+  } else {
+    cw.innerHTML='<div class="contact-placeholder">Noch kein Ansprechpartner hinterlegt<br><span style="font-size:11px;margin-top:4px;display:block;">Im Bearbeiten-Modus hinzufügen</span></div>';
+  }
+
+  /* Aktivitäten */
+  renderActivities(u);
+  document.getElementById('act-add-form').classList.remove('open');
+
+  /* Interner d&b Bereich */
+  renderInternSection(u);
+
+  /* Kann-Felder */
+  var kEl=document.getElementById('db-kann');
+  function kannItem(label,val){
+    var empty=!val||val==='–'||val==='';
+    return '<div class="kann-item"><div class="kann-label">'+label+'</div><div class="kann-value'+(empty?' empty':'')+'">'+( empty?'Noch nicht erfasst':val)+'</div></div>';
+  }
+  var degrees=(u.degreeTypes||[]).join(', ')||'';
+  var nextStr=u.nextAction&&u.nextAction!=='–'?u.nextAction+(u.nextActionDate?' · '+new Date(u.nextActionDate).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'}):''):'';
+  var overdueStyle=isOverdue(u)?'color:var(--danger);':'';
+  var profStr=profileScore(u); var profStrColor=profStr>=80?'var(--ok)':profStr>=50?'var(--p)':'var(--n400)';
+  kEl.innerHTML=
+    kannItem('Studierende im FB',u.students)
+    +kannItem('Lehrsprache',u.language)
+    +kannItem('Abschlussarten',degrees)
+    +'<div class="kann-item kann-action">'+
+      '<div class="kann-label">Nächste Aktion'+(isOverdue(u)?' <span class="overdue-badge">überfällig</span>':'')+'</div>'+
+      '<div class="kann-value'+(nextStr?'':' empty')+'" style="'+overdueStyle+'">'+(nextStr||'Noch nicht geplant')+'</div>'+
+    '</div>'
+    +'<div class="kann-item" style="grid-column:1/-1;">'+
+      '<div class="kann-label" style="display:flex;justify-content:space-between;">Profilvollständigkeit <span>'+profStr+'%</span></div>'+
+      '<div style="height:5px;background:var(--n200);border-radius:20px;margin-top:4px;overflow:hidden;"><div style="height:100%;width:'+profStr+'%;background:'+profStrColor+';border-radius:20px;transition:width 0.6s ease;"></div></div>'+
+    '</div>';
+
+  /* Notes */
+  var noteSec=document.getElementById('db-notes-sec');
+  var noteEl=document.getElementById('db-notes');
+  if(u.notes&&u.notes.trim()){
+    noteEl.textContent=u.notes;
+    noteSec.style.display='block';
+  } else {
+    noteSec.style.display='none';
+  }
+
+  var ws=document.getElementById('db-web-sec');
+  if(u.website){ws.style.display='block';document.getElementById('db-web-link').href=u.website;}
+  else ws.style.display='none';
+
+  /* OSM iframe */
+  var d=0.007;
+  document.getElementById('db-iframe').src='https://www.openstreetmap.org/export/embed.html?bbox='+(u.lng-d)+','+(u.lat-d)+','+(u.lng+d)+','+(u.lat+d)+'&layer=mapnik&marker='+u.lat+','+u.lng;
+  document.getElementById('db-coords').textContent=u.lat.toFixed(4)+', '+u.lng.toFixed(4);
+  document.getElementById('db-osm-link').href='https://www.openstreetmap.org/?mlat='+u.lat+'&mlon='+u.lng+'#map=15/'+u.lat+'/'+u.lng;
+
+  document.getElementById('db-overlay').classList.add('open');
+}
+
+function closeDb() {
+  document.getElementById('db-overlay').classList.remove('open');
+  document.getElementById('db-iframe').src='';
+  currentId=null;
+}
+function handleDbOverlayClick(e) { if(e.target===document.getElementById('db-overlay')) closeDb(); }
+
+/* ══ LIST ══════════════════════════════════════════════════════ */
+function buildListCatChips() {
+  /* Rebuild only the category chips — keep the top-filter button */
+  var c=document.getElementById('lo-cats');
+  /* Remove old cat chips */
+  c.querySelectorAll('.lo-cat-chip:not(#lo-top-btn)').forEach(function(el){el.remove();});
+  Object.keys(CAT).forEach(k=>{
+    var cat=CAT[k];
+    var btn=document.createElement('button');
+    btn.className='lo-cat-chip'+(listCatFilter.includes(k)?' on':'');
+    btn.style.background=listCatFilter.includes(k)?cat.color:'';
+    btn.innerHTML='<span class="lo-cat-chip-dot" style="background:'+(listCatFilter.includes(k)?'rgba(255,255,255,0.8)':cat.color)+'"></span>'+cat.label;
+    btn.onclick=function(){
+      if(listCatFilter.includes(k)) listCatFilter=listCatFilter.filter(x=>x!==k);
+      else listCatFilter.push(k);
+      buildListCatChips(); renderList();
+    };
+    c.appendChild(btn);
+  });
+}
+
+function toggleTopFilter() {
+  listTopFilter=!listTopFilter;
+  var btn=document.getElementById('lo-top-btn');
+  if(btn){
+    btn.classList.toggle('on',listTopFilter);
+    btn.style.background=listTopFilter?'var(--ok)':'';
+    btn.style.color=listTopFilter?'white':'var(--ok)';
+    btn.querySelector('.lo-cat-chip-dot').style.background=listTopFilter?'rgba(255,255,255,0.85)':'var(--ok)';
+  }
+  renderList();
+}
+
+function setListView(v) {
+  listView=v;
+  document.getElementById('vt-grid').classList.toggle('on',v==='grid');
+  document.getElementById('vt-table').classList.toggle('on',v==='table');
+  document.getElementById('lo-grid').style.display=v==='grid'?'':'none';
+  document.getElementById('lo-table').style.display=v==='table'?'':'none';
+  renderList();
+}
+
+function toggleList() {
+  /* Kanban schließen wenn Liste geöffnet wird */
+  if(!listOpen&&kanbanOpen){ toggleKanban(); }
+  listOpen=!listOpen;
+  document.getElementById('list-overlay').classList.toggle('open',listOpen);
+  document.getElementById('list-btn').classList.toggle('active',listOpen);
+  if(listOpen){ buildListCatChips(); renderList(); }
+}
+function renderList() {
+  var q=(document.getElementById('list-search').value||'').toLowerCase();
+  var sort=document.getElementById('list-sort').value;
+  var po={main:0,watch:1,check:2};
+  var items=UNIS.filter(u=>{
+    var textOk=!q||u.name.toLowerCase().includes(q)||(u.city||'').toLowerCase().includes(q)||(u.relevance||'').toLowerCase().includes(q)||(u.notes||'').toLowerCase().includes(q);
+    var catOk=!listCatFilter.length||listCatFilter.some(c=>(u.categories||[]).includes(c));
+    var topOk=!listTopFilter||calcScore(u)>=60;
+    return textOk&&catOk&&topOk;
+  }).slice();
+  if(sort==='score')  items.sort((a,b)=>calcScore(b)-calcScore(a));
+  if(sort==='name')   items.sort((a,b)=>a.name.localeCompare(b.name));
+  if(sort==='prio')   items.sort((a,b)=>(po[a.prio||'check']||2)-(po[b.prio||'check']||2));
+  if(sort==='region') items.sort((a,b)=>(a.region||'').localeCompare(b.region||''));
+  document.getElementById('lo-count').textContent=items.length+' Einträge';
+
+  /* TABLE VIEW */
+  if(listView==='table') {
+    var tbl=document.getElementById('lo-table'); tbl.innerHTML='';
+    if(!items.length) { tbl.innerHTML=emptyStateHTML(!!q||!!listCatFilter.length||listTopFilter); return; }
+    var relDotMap={partner:'#C4B5FD',coop:'#6EE7B7',meeting:'#FCD34D',contacted:'#93C5FD',none:'var(--n300)'};
+    var html='<table class="lo-tbl"><thead><tr>'
+      +'<th>Hochschule</th><th>Score</th><th>Priorität</th><th>Status</th><th>Region</th><th>Nächste Aktion</th>'
+      +'</tr></thead><tbody>';
+    items.forEach(u=>{
+      var score=calcScore(u); var p=PRIO[u.prio||'check'];
+      var rel=REL[u.relStatus||'none']||REL.none;
+      var odStyle=isOverdue(u)?'color:var(--danger);font-weight:700;':'';
+      var nextTxt=u.nextAction&&u.nextAction!=='–'?u.nextAction:'—';
+      if(u.nextActionDate&&u.nextAction&&u.nextAction!=='–') nextTxt+=' <span style="color:var(--n400);font-weight:500;">'+new Date(u.nextActionDate).toLocaleDateString('de-DE',{day:'2-digit',month:'short'})+'</span>';
+      html+='<tr onclick="openDb('+u.id+');toggleList()">'
+        +'<td><div class="td-name">'+u.name+(isOverdue(u)?'&nbsp;<span class="overdue-badge" style="font-size:9px;">!</span>':'')+'</div><div class="td-city">'+u.city+'</div></td>'
+        +'<td><span class="uc-score" style="background:'+scoreBg(score)+';color:'+scoreColor(score)+';border:1px solid '+scoreBorder(score)+';font-size:12px;padding:3px 9px;">'+score+'</span></td>'
+        +'<td><span class="pb '+p.cls+'">'+p.label+'</span></td>'
+        +'<td><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--n700);"><span style="width:7px;height:7px;border-radius:50%;background:'+relDotMap[u.relStatus||'none']+';display:inline-block;flex-shrink:0;"></span>'+rel.label+'</span></td>'
+        +'<td style="color:var(--n400);font-size:11px;">'+(REGION[u.region]||u.region)+'</td>'
+        +'<td style="font-size:11px;max-width:180px;'+odStyle+'">'+nextTxt+'</td>'
+        +'</tr>';
+    });
+    html+='</tbody></table>';
+    tbl.innerHTML=html;
+    return;
+  }
+
+  /* GRID VIEW */
+  var g=document.getElementById('lo-grid'); g.innerHTML='';
+  if(!items.length) { g.innerHTML=emptyStateHTML(!!q||!!listCatFilter.length||listTopFilter); return; }
+  items.forEach(u=>{
+    var p=PRIO[u.prio||'check'];
+    var ac=(CAT[(u.categories||[])[0]]||{}).color||'#5B21B6';
+    var chips=(u.categories||[]).slice(0,4).map(c=>{var cat=CAT[c];return cat?'<span class="uc-chip"><span class="uc-chip-dot" style="background:'+cat.color+'"></span>'+cat.label+'</span>':'';}).join('');
+    var score=calcScore(u);
+    var overdueHTML=isOverdue(u)?'<span class="overdue-badge">⚠ Überfällig</span>':'';
+    var card=document.createElement('div'); card.className='uc';
+    card.style.cursor='pointer';
+    card.onclick=function(){ openDb(u.id); toggleList(); };
+    card.innerHTML='<div class="uc-bar" style="background:'+ac+'"></div>'
+      +'<div class="uc-body">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">'
+          +'<div class="uc-name" style="margin-bottom:0;">'+u.name+'</div>'
+          +'<span class="uc-score" style="background:'+scoreBg(score)+';color:'+scoreColor(score)+';border:1px solid '+scoreBorder(score)+';">'+score+'</span>'
+        +'</div>'
+        +'<div class="uc-city"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'+(u.city||'')+' · '+(REGION[u.region]||u.region)+'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+          +'<span class="pb '+p.cls+'">'+p.label+'</span>'
+          +overdueHTML
+        +'</div>'
+        +'<div class="uc-chips">'+chips+'</div>'
+        +profileBarHTML(u)
+      +'</div>'
+      +'<div class="uc-footer"><span class="uc-footer-lbl">'+scoreLabel(score)+'</span>'
+        +'<button class="uc-btn" onclick="event.stopPropagation();openDb('+u.id+');toggleList()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</button>'
+      +'</div>';
+    g.appendChild(card);
+  });
+}
+
+function emptyStateHTML(filtered) {
+  if(filtered) return '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Keine Treffer</div><div class="empty-sub">Kein Eintrag passt zu deinen Filtern oder Suchbegriffen.</div><button class="empty-btn" onclick="clearAllFilters();document.getElementById(\'list-search\').value=\'\';renderList();">Filter zurücksetzen</button></div>';
+  return '<div class="empty-state"><div class="empty-icon">🏫</div><div class="empty-title">Noch keine Hochschulen</div><div class="empty-sub">Füge deine erste Hochschule über den Button oben rechts hinzu.</div><button class="empty-btn" onclick="toggleList();openModal();">Hinzufügen</button></div>';
+}
+
+/* ══ EDIT / DELETE ══════════════════════════════════════════════ */
+function editCurrent() {
+  if(!currentId) return;
+  var u=UNIS.find(x=>x.id===currentId); if(!u)return;
+  editingId=currentId; closeDb();
+  document.getElementById('m-title').textContent='Hochschule bearbeiten';
+  var cp=u.contactPerson||{};
+  var fMap={
+    'f-name':u.name,'f-city':u.city||'','f-website':u.website||'','f-logo':u.logoUrl||'','f-photo':u.photoUrl||'',
+    'f-address':'','f-rel':u.relevance||'','f-progs':(u.programs||[]).join(', '),
+    'f-coop':u.cooperations||'','f-notes':u.notes||'',
+    'f-relstatus':u.relStatus||'none','f-lastcontact':u.lastContact||'',
+    'f-cp-name':cp.name||'','f-cp-role':cp.role||'','f-cp-email':cp.email||'',
+    'f-cp2-name':(u.contactPerson2||{}).name||'','f-cp2-role':(u.contactPerson2||{}).role||'','f-cp2-email':(u.contactPerson2||{}).email||'',
+    'f-intern-contact':u.internContact||'','f-intern-note':u.internNote||'',
+    'f-students':u.students||'','f-language':u.language||'',
+    'f-nextaction':u.nextAction||'','f-nextdate':u.nextActionDate||''
+  };
+  Object.keys(fMap).forEach(id=>{ var el=document.getElementById(id); if(el) el.value=fMap[id]; });
+  var dt=u.degreeTypes||[];
+  var dba=document.getElementById('f-deg-ba'); if(dba) dba.checked=dt.includes('Bachelor');
+  var dma=document.getElementById('f-deg-ma'); if(dma) dma.checked=dt.includes('Master');
+  var dphd=document.getElementById('f-deg-phd'); if(dphd) dphd.checked=dt.includes('PhD/Promotion');
+  document.getElementById('f-lat').value=u.lat;
+  document.getElementById('f-lng').value=u.lng;
+  document.getElementById('f-prio').value=u.prio||'check';
+  document.getElementById('f-region').value=u.region||'europe';
+  var id=document.getElementById('f-intern-dept'); if(id) id.value=u.internDept||'';
+  var ib=document.getElementById('f-budget'); if(ib) ib.value=u.budget||'';
+  document.getElementById('geo-status').textContent='';
+  Object.keys(CAT).forEach(k=>{var c=document.getElementById('f-c-'+k);if(c)c.checked=(u.categories||[]).includes(k);});
+  document.getElementById('m-overlay').classList.add('open');
+}
+function deleteCurrent() {
+  if(!currentId) return;
+  var id=currentId;
+  var u=UNIS.find(x=>x.id===id);
+  showConfirm('Hochschule löschen','„'+(u?u.name:'')+'\" wird unwiderruflich gelöscht.','Löschen','danger',function(){
+    var e=markerMap[id];
+    if(e){if(e.marker.isPopupOpen())e.marker.closePopup();clusterGroup.removeLayer(e.marker);}
+    delete markerMap[id];
+    UNIS=UNIS.filter(x=>x.id!==id);
+    saveData(); closeDb(); applyFilter();
+    if(listOpen) renderList();
+    showToast('Hochschule gelöscht.','success');
+  });
+}
+
+/* ══ MODAL ══════════════════════════════════════════════════════ */
+function openModal() {
+  editingId=null;
+  document.getElementById('m-title').textContent='Hochschule hinzufügen';
+  ['f-name','f-city','f-website','f-logo','f-photo','f-address','f-rel','f-progs','f-coop','f-notes',
+   'f-lastcontact','f-cp-name','f-cp-role','f-cp-email',
+   'f-cp2-name','f-cp2-role','f-cp2-email',
+   'f-intern-contact','f-intern-note',
+   'f-students','f-language','f-nextaction','f-nextdate'
+  ].forEach(id=>{ var el=document.getElementById(id); if(el) el.value=''; });
+  var rs=document.getElementById('f-relstatus'); if(rs) rs.value='none';
+  var id2=document.getElementById('f-intern-dept'); if(id2) id2.value='';
+  var ib2=document.getElementById('f-budget'); if(ib2) ib2.value='';
+  ['f-deg-ba','f-deg-ma','f-deg-phd'].forEach(id=>{ var el=document.getElementById(id); if(el) el.checked=false; });
+  document.getElementById('f-lat').value=''; document.getElementById('f-lng').value='';
+  document.getElementById('f-prio').value='check'; document.getElementById('f-region').value='europe';
+  document.getElementById('geo-status').textContent='Tipp: Namen eingeben und suchen.';
+  Object.keys(CAT).forEach(k=>{var c=document.getElementById('f-c-'+k);if(c)c.checked=false;});
+  document.getElementById('m-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('m-overlay').classList.remove('open'); editingId=null; }
+function handleModalClick(e) { if(e.target===document.getElementById('m-overlay')) closeModal(); }
+
+function autoFillLogo(websiteVal) {
+  var logoField=document.getElementById('f-logo');
+  if(!logoField||logoField.value) return;
+  try {
+    var host=new URL(websiteVal).hostname;
+    logoField.value='https://logo.clearbit.com/'+host;
+  } catch(e){}
+}
+
+function geocode() {
+  var addr=document.getElementById('f-address').value.trim()||document.getElementById('f-name').value.trim();
+  if(!addr){document.getElementById('geo-status').textContent='Bitte Namen eingeben.';return;}
+  document.getElementById('geo-status').textContent='Suche läuft…';
+  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(addr)+'&format=json&limit=1')
+    .then(r=>r.json()).then(d=>{
+      if(d&&d.length){
+        document.getElementById('f-lat').value=parseFloat(d[0].lat).toFixed(5);
+        document.getElementById('f-lng').value=parseFloat(d[0].lon).toFixed(5);
+        if(!document.getElementById('f-city').value) document.getElementById('f-city').value=d[0].display_name.split(',').slice(0,2).join(', ').trim();
+        document.getElementById('geo-status').textContent='✓ '+d[0].display_name.split(',').slice(0,3).join(', ');
+      } else document.getElementById('geo-status').textContent='Nicht gefunden.';
+    }).catch(()=>document.getElementById('geo-status').textContent='Fehler. Koordinaten manuell eingeben.');
+}
+
+function saveUni() {
+  var name=document.getElementById('f-name').value.trim();
+  var lat=parseFloat(document.getElementById('f-lat').value);
+  var lng=parseFloat(document.getElementById('f-lng').value);
+  if(!name){showToast('Bitte einen Namen eingeben.','error');return;}
+  if(isNaN(lat)||isNaN(lng)){showToast('Bitte Koordinaten eingeben.','error');return;}
+  var cats=Object.keys(CAT).filter(k=>{var c=document.getElementById('f-c-'+k);return c&&c.checked;});
+  var u={
+    id:editingId||nextId++, name, city:document.getElementById('f-city').value.trim(),
+    website:document.getElementById('f-website').value.trim(), region:document.getElementById('f-region').value,
+    lat, lng, categories:cats, prio:document.getElementById('f-prio').value,
+    programs:document.getElementById('f-progs').value.split(',').map(s=>s.trim()).filter(Boolean),
+    relevance:document.getElementById('f-rel').value.trim(),
+    cooperations:document.getElementById('f-coop').value.trim(),
+    logoUrl:document.getElementById('f-logo').value.trim(),
+    photoUrl:document.getElementById('f-photo').value.trim(),
+    notes:document.getElementById('f-notes').value.trim(),
+    relStatus:document.getElementById('f-relstatus').value,
+    lastContact:document.getElementById('f-lastcontact').value,
+    contactPerson:{
+      name:document.getElementById('f-cp-name').value.trim(),
+      role:document.getElementById('f-cp-role').value.trim(),
+      email:document.getElementById('f-cp-email').value.trim()
+    },
+    contactPerson2:{
+      name:document.getElementById('f-cp2-name').value.trim(),
+      role:document.getElementById('f-cp2-role').value.trim(),
+      email:document.getElementById('f-cp2-email').value.trim()
+    },
+    internContact:document.getElementById('f-intern-contact').value.trim(),
+    internDept:document.getElementById('f-intern-dept').value,
+    budget:document.getElementById('f-budget').value,
+    internNote:document.getElementById('f-intern-note').value.trim(),
+    activities:editingId?(UNIS.find(function(x){return x.id===editingId;})||{}).activities||[]:[],
+    students:document.getElementById('f-students').value.trim(),
+    language:document.getElementById('f-language').value.trim(),
+    degreeTypes:[
+      document.getElementById('f-deg-ba').checked?'Bachelor':null,
+      document.getElementById('f-deg-ma').checked?'Master':null,
+      document.getElementById('f-deg-phd').checked?'PhD/Promotion':null
+    ].filter(Boolean),
+    nextAction:document.getElementById('f-nextaction').value.trim(),
+    nextActionDate:document.getElementById('f-nextdate').value
+  };
+  if(editingId){
+    UNIS=UNIS.map(x=>x.id===editingId?u:x);
+    var old=markerMap[editingId];
+    if(old){if(old.marker.isPopupOpen())old.marker.closePopup();clusterGroup.removeLayer(old.marker);delete markerMap[editingId];}
+  } else {
+    UNIS.push(u);
+  }
+  saveData(); clusterGroup.addLayer(addMarker(u)); applyFilter(); closeModal(); openDb(u.id);
+  if(listOpen) renderList();
+  showToast(editingId?'Hochschule aktualisiert.':'Hochschule hinzugefügt.','success');
+}
+
+/* ══ CAT TREE ═══════════════════════════════════════════════════ */
+function buildCatTree() {
+  var tree=document.getElementById('f-cat-tree'); tree.innerHTML='';
+  var g={TECH:[],BUSINESS:[],RESEARCH:[]};
+  Object.keys(CAT).forEach(k=>g[CAT[k].group].push(k));
+  var gl={TECH:'Technik',BUSINESS:'Business',RESEARCH:'Forschung'};
+  Object.keys(g).forEach(grp=>{
+    if(!g[grp].length)return;
+    var ge=document.createElement('div'); ge.className='ct-grp';
+    var tl=document.createElement('div'); tl.className='ct-main'; tl.textContent=gl[grp]; ge.appendChild(tl);
+    var sd=document.createElement('div'); sd.className='ct-subs';
+    g[grp].forEach(id=>{
+      var sub=document.createElement('div'); sub.className='ct-sub';
+      var inp=document.createElement('input'); inp.type='checkbox'; inp.id='f-c-'+id;
+      var lbl=document.createElement('label'); lbl.htmlFor='f-c-'+id; lbl.textContent=CAT[id].label;
+      sub.appendChild(inp); sub.appendChild(lbl); sd.appendChild(sub);
+    });
+    ge.appendChild(sd); tree.appendChild(ge);
+  });
+}
+
+/* ══ SCORE + DISTANCE ═══════════════════════════════════════════ */
+var DB_HQ = { lat:48.9457, lng:9.4313 }; // Backnang
+
+/* Grobe Bounding-Boxes je Region für automatischen Karten-Sprung */
+var REGION_BOUNDS = {
+  europe:   [[34, -25], [72, 45]],
+  americas: [[-15, -130], [60, -55]],
+  asia:     [[5,   55],  [55, 150]],
+  oceania:  [[-48, 110], [5,  180]]
+};
+
+var CAT_WEIGHTS = {
+  'audio-technik': 12, 'akustik': 11, 'audio-forsch': 10,
+  'ingenieurwesen': 8, 'innovation': 7, 'it': 5,
+  'projmgmt': 4, 'bwl': 3, 'marketing': 2
+};
+
+function calcScore(u) {
+  // Strategische Passung 0–40
+  var passung = Math.min(40, (u.categories||[]).reduce(function(s,c){ return s+(CAT_WEIGHTS[c]||0); }, 0));
+  // Beziehungsreife 0–30
+  var relPts = {partner:30, coop:24, meeting:16, contacted:8, none:0};
+  var beziehung = relPts[u.relStatus||'none']||0;
+  // Priorität 0–20
+  var prioPts = {main:20, watch:10, check:4};
+  var prio = prioPts[u.prio||'check']||4;
+  // Profilvollständigkeit 0–10
+  var profil = Math.round(profileScore(u)/100*10);
+  return passung + beziehung + prio + profil;
+}
+
+function scoreColor(s) {
+  return s>=80 ? '#059669' : s>=60 ? '#D97706' : s>=40 ? '#5B21B6' : '#71717A';
+}
+function scoreBg(s) {
+  return s>=80 ? '#ECFDF5' : s>=60 ? '#FFFBEB' : s>=40 ? '#EDE9FE' : '#F4F4F5';
+}
+function scoreBorder(s) {
+  return s>=80 ? '#A7F3D0' : s>=60 ? '#FDE68A' : s>=40 ? '#DDD6FE' : '#E4E4E7';
+}
+function scoreLabel(s) {
+  return s>=80 ? 'Top-Kandidat' : s>=60 ? 'Hohe Priorität' : s>=40 ? 'Mittlere Priorität' : 'Beobachten';
+}
+
+function calcDistance(u) {
+  var R=6371, lat1=DB_HQ.lat*Math.PI/180, lat2=u.lat*Math.PI/180;
+  var dLat=(u.lat-DB_HQ.lat)*Math.PI/180, dLon=(u.lng-DB_HQ.lng)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+}
+
+/* ══ HELPERS ════════════════════════════════════════════════════ */
+function profileScore(u) {
+  var fields=[
+    u.name, u.city, u.website, u.relevance, u.cooperations,
+    (u.categories||[]).length>0?'x':null,
+    (u.programs||[]).length>0?'x':null,
+    u.contactPerson&&u.contactPerson.name&&u.contactPerson.name!=='–'?'x':null,
+    u.students, u.language,
+    (u.degreeTypes||[]).length>0?'x':null
+  ];
+  var filled=fields.filter(Boolean).length;
+  return Math.round(filled/fields.length*100);
+}
+function isOverdue(u) {
+  if(!u.nextActionDate) return false;
+  return new Date(u.nextActionDate)<new Date(new Date().toDateString());
+}
+function profileBarHTML(u) {
+  var score=profileScore(u);
+  var color=score>=80?'var(--ok)':score>=50?'var(--p)':'var(--n400)';
+  return '<div class="profile-bar-wrap">'
+    +'<div class="profile-bar-lbl"><span>Profil</span><span>'+score+'%</span></div>'
+    +'<div class="profile-bar"><div class="profile-bar-fill" style="width:'+score+'%;background:'+color+'"></div></div>'
+    +'</div>';
+}
+
+/* ══ TOAST ══════════════════════════════════════════════════════ */
+function showToast(msg, type) {
+  var c=document.getElementById('toast-container');
+  var t=document.createElement('div');
+  t.className='toast '+(type||'');
+  var icon=type==='success'?'✓':type==='error'?'✕':'ℹ';
+  t.innerHTML='<span style="font-size:15px;font-weight:900;">'+icon+'</span>'+msg;
+  c.appendChild(t);
+  setTimeout(function(){
+    t.classList.add('hiding');
+    setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },220);
+  }, 3200);
+}
+
+/* ══ CUSTOM CONFIRM ═════════════════════════════════════════════ */
+var _confirmCb=null;
+function showConfirm(title, msg, okLabel, type, cb) {
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-msg').textContent=msg;
+  var ok=document.getElementById('confirm-ok');
+  ok.textContent=okLabel||'Bestätigen';
+  ok.className=type==='danger'?'danger':'primary';
+  _confirmCb=cb;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); _confirmCb=null; }
+function confirmOkClick() { closeConfirm(); if(_confirmCb) _confirmCb(); }
+
+/* ══ CSV EXPORT ═════════════════════════════════════════════════ */
+function exportCSV() {
+  var cols=['Name','Stadt','Region','Score','Priorität','Beziehungsstatus','Kategorien','Programme','Letzter Kontakt','Nächste Aktion','Website'];
+  var rows=[cols];
+  UNIS.forEach(u=>{
+    rows.push([
+      u.name, u.city||'', REGION[u.region]||u.region||'', calcScore(u),
+      PRIO[u.prio||'check'].label.replace(/[⭐👁❓]/g,'').trim(),
+      REL[u.relStatus||'none'].label,
+      (u.categories||[]).map(c=>CAT[c]&&CAT[c].label||c).join('; '),
+      (u.programs||[]).join('; '),
+      u.lastContact||'', u.nextAction||'', u.website||''
+    ].map(v=>'"'+(v+'').replace(/"/g,'""')+'"'));
+  });
+  var csv=rows.map(r=>r.join(',')).join('\r\n');
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url; a.download='hochschulen-'+new Date().toISOString().split('T')[0]+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  document.getElementById('settings-dd').classList.remove('open');
+  showToast('CSV exportiert.','success');
+}
+
+/* ══ STATISTIK ══════════════════════════════════════════════════ */
+function openStats() {
+  document.getElementById('settings-dd').classList.remove('open');
+  var total=UNIS.length;
+  var byPrio={main:0,watch:0,check:0};
+  var byRel={none:0,contacted:0,meeting:0,coop:0,partner:0};
+  var byReg={europe:0,americas:0,asia:0,oceania:0};
+  UNIS.forEach(u=>{
+    if(byPrio[u.prio]!==undefined) byPrio[u.prio]++;
+    if(byRel[u.relStatus||'none']!==undefined) byRel[u.relStatus||'none']++;
+    if(byReg[u.region]!==undefined) byReg[u.region]++;
+  });
+  function bar(label, val, max, color) {
+    var pct=max?Math.round(val/max*100):0;
+    return '<div style="margin-bottom:10px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--n700);margin-bottom:4px;"><span>'+label+'</span><span style="color:var(--n400);">'+val+'</span></div>'
+      +'<div style="height:7px;background:var(--n100);border-radius:20px;overflow:hidden;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:20px;transition:width 0.6s ease;"></div></div></div>';
+  }
+  /* Score stats */
+  var scores=UNIS.map(u=>calcScore(u));
+  var avgScore=total?Math.round(scores.reduce(function(a,b){return a+b;},0)/total):0;
+  var top3=UNIS.slice().sort(function(a,b){return calcScore(b)-calcScore(a);}).slice(0,3);
+  var html='<div style="font-family:Inter,sans-serif;padding:8px;">'
+    +'<div style="display:flex;gap:10px;margin-bottom:16px;">'
+      +'<div style="flex:1;background:var(--p-pale);border:1px solid var(--p-b);border-radius:10px;padding:12px;text-align:center;">'
+        +'<div style="font-size:26px;font-weight:900;color:var(--p);">'+total+'</div>'
+        +'<div style="font-size:10px;font-weight:700;color:var(--p-l);text-transform:uppercase;letter-spacing:0.5px;">Hochschulen</div>'
+      +'</div>'
+      +'<div style="flex:1;background:'+scoreBg(avgScore)+';border:1px solid '+scoreBorder(avgScore)+';border-radius:10px;padding:12px;text-align:center;">'
+        +'<div style="font-size:26px;font-weight:900;color:'+scoreColor(avgScore)+';">'+avgScore+'</div>'
+        +'<div style="font-size:10px;font-weight:700;color:'+scoreColor(avgScore)+';opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;">Ø Score</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="font-size:10px;font-weight:800;color:var(--n300);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px;">Top-Hochschulen</div>'
+    +'<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">'
+    +top3.map(function(u,i){
+      var s=calcScore(u);
+      return '<div style="display:flex;align-items:center;gap:10px;background:var(--n50);border:1px solid var(--n200);border-radius:8px;padding:8px 12px;cursor:pointer;" onclick="document.getElementById(\'simple-modal-overlay\').remove();openDb('+u.id+')">'
+        +'<span style="font-size:13px;font-weight:900;color:var(--n300);width:16px;text-align:center;">'+(i+1)+'</span>'
+        +'<span style="flex:1;font-size:13px;font-weight:700;color:var(--n900);">'+u.name+'</span>'
+        +'<span class="uc-score" style="background:'+scoreBg(s)+';color:'+scoreColor(s)+';border:1px solid '+scoreBorder(s)+';">'+s+'</span>'
+      +'</div>';
+    }).join('')
+    +'</div>'
+    +'<div style="font-size:10px;font-weight:800;color:var(--n300);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;">Priorität</div>'
+    +'<div style="font-size:10px;font-weight:800;color:var(--n300);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;">Priorität</div>'
+    +bar('Hauptziel',byPrio.main,total,'var(--p)')
+    +bar('Beobachten',byPrio.watch,total,'var(--ok)')
+    +bar('Prüfen',byPrio.check,total,'var(--n300)')
+    +'<div style="font-size:10px;font-weight:800;color:var(--n300);text-transform:uppercase;letter-spacing:0.7px;margin:16px 0 10px;">Beziehungsstatus</div>'
+    +bar('Strategischer Partner',byRel.partner,total,'#7C3AED')
+    +bar('Kooperation laufend',byRel.coop,total,'#059669')
+    +bar('Gespräch geführt',byRel.meeting,total,'#D97706')
+    +bar('Kontakt hergestellt',byRel.contacted,total,'#2563EB')
+    +bar('Kein Kontakt',byRel.none,total,'var(--n300)')
+    +'<div style="font-size:10px;font-weight:800;color:var(--n300);text-transform:uppercase;letter-spacing:0.7px;margin:16px 0 10px;">Region</div>'
+    +bar('Europa',byReg.europe,total,'#4C1D95')
+    +bar('Amerika',byReg.americas,total,'#1E40AF')
+    +bar('Asien',byReg.asia,total,'#065F46')
+    +bar('Ozeanien',byReg.oceania,total,'#92400E')
+    +'</div>';
+  showSimpleModal('Statistik-Übersicht', html);
+}
+
+function showSimpleModal(title, bodyHTML) {
+  var existing=document.getElementById('simple-modal-overlay');
+  if(existing) existing.remove();
+  var ov=document.createElement('div');
+  ov.id='simple-modal-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(10,6,20,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML='<div style="background:var(--n0);border-radius:16px;padding:28px;width:420px;max-width:96vw;max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.2);border:1px solid var(--n200);animation:dbIn 0.18s ease;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
+      +'<span style="font-size:16px;font-weight:800;color:var(--n900);">'+title+'</span>'
+      +'<button onclick="document.getElementById(\'simple-modal-overlay\').remove()" style="width:30px;height:30px;border-radius:7px;border:1.5px solid var(--n200);background:none;cursor:pointer;font-size:16px;color:var(--n400);display:flex;align-items:center;justify-content:center;">✕</button>'
+    +'</div>'
+    +bodyHTML+'</div>';
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+  document.body.appendChild(ov);
+}
+
+/* ══ MAP THEME ══════════════════════════════════════════════════ */
+var mapThemes = [
+  { label:'Hell', url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
+  { label:'Grau', url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' },
+  { label:'Dunkel', url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' }
+];
+var currentTheme=0, tileLayer=null;
+
+function switchMapTheme() {
+  currentTheme=(currentTheme+1)%mapThemes.length;
+  var t=mapThemes[currentTheme];
+  if(tileLayer) map.removeLayer(tileLayer);
+  tileLayer=L.tileLayer(t.url,{maxZoom:19,noWrap:true,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+  tileLayer.bringToBack();
+  document.getElementById('theme-label').textContent=t.label;
+  document.getElementById('settings-dd').classList.remove('open');
+}
+
+/* ══ RESET ══════════════════════════════════════════════════════ */
+function resetAllData() {
+  document.getElementById('settings-dd').classList.remove('open');
+  showConfirm('Alle Daten zurücksetzen','Wirklich alle Daten löschen und Demo-Daten wiederherstellen? Diese Aktion kann nicht rückgängig gemacht werden.','Zurücksetzen','danger',function(){
+    localStorage.removeItem('unis-v8');
+    clusterGroup.clearLayers(); markerMap={}; UNIS=[];
+    initData(); clusterGroup.addLayers(UNIS.map(u=>addMarker(u))); applyFilter();
+    if(listOpen) renderList();
+    showToast('Daten zurückgesetzt.','success');
+  });
+}
+
+/* ══ EXPORT / IMPORT ════════════════════════════════════════════ */
+function exportData() {
+  var blob=new Blob([JSON.stringify(UNIS,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url; a.download='universities-'+new Date().toISOString().split('T')[0]+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function triggerImport() {
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
+  inp.onchange=e=>{
+    var file=e.target.files[0]; if(!file)return;
+    var r=new FileReader();
+    r.onload=ev=>{
+      try{
+        var d=JSON.parse(ev.target.result);
+        if(Array.isArray(d)){
+          UNIS=d; saveData();
+          clusterGroup.clearLayers(); markerMap={};
+          clusterGroup.addLayers(UNIS.map(u=>addMarker(u))); applyFilter();
+          if(listOpen) renderList();
+          showToast(d.length+' Hochschulen importiert.','success');
+        }
+      }catch(err){showToast('Fehler beim Import: '+err.message,'error');}
+    };
+    r.readAsText(file);
+  };
+  inp.click();
+}
+
+/* ══ KANBAN ══════════════════════════════════════════════════════ */
+var kanbanOpen=false;
+var REL_ORDER=['none','contacted','meeting','coop','partner'];
+var REL_COLORS={none:'#71717A',contacted:'#2563EB',meeting:'#D97706',coop:'#059669',partner:'#7C3AED'};
+
+function toggleKanban(){
+  /* Liste schließen wenn Kanban geöffnet wird */
+  if(!kanbanOpen&&listOpen){ toggleList(); }
+  kanbanOpen=!kanbanOpen;
+  document.getElementById('kanban-overlay').classList.toggle('open',kanbanOpen);
+  document.getElementById('kanban-btn').classList.toggle('active',kanbanOpen);
+  if(kanbanOpen) renderKanban();
+}
+
+function renderKanban(){
+  var board=document.getElementById('kb-board'); board.innerHTML='';
+  REL_ORDER.forEach(function(rel){
+    var info=REL[rel]||REL.none;
+    var unis=UNIS.filter(function(u){return (u.relStatus||'none')===rel;})
+      .sort(function(a,b){return calcScore(b)-calcScore(a);});
+    var col=document.createElement('div'); col.className='kb-col'; col.dataset.rel=rel;
+    col.innerHTML='<div class="kb-col-hd">'
+      +'<span class="kb-col-dot" style="background:'+REL_COLORS[rel]+'"></span>'
+      +'<span class="kb-col-name">'+info.label+'</span>'
+      +'<span class="kb-col-cnt" style="background:'+REL_COLORS[rel]+'">'+unis.length+'</span>'
+      +'</div>'
+      +'<div class="kb-col-body" data-rel="'+rel+'" ondragover="kbDragOver(event)" ondrop="kbDrop(event,\''+rel+'\')"></div>';
+    board.appendChild(col);
+    var body=col.querySelector('.kb-col-body');
+    if(!unis.length){body.innerHTML='<div class="kb-empty">Keine Hochschulen</div>';return;}
+    unis.forEach(function(u){
+      var sc=calcScore(u); var p=PRIO[u.prio||'check'];
+      var cats=(u.categories||[]).slice(0,2).map(function(c){return CAT[c]?'<span class="kb-card-tag">'+CAT[c].label+'</span>':'';}).join('');
+      var od=isOverdue(u)?'<span class="overdue-badge" style="font-size:9px;">⚠</span>':'';
+      var card=document.createElement('div'); card.className='kb-card'; card.draggable=true; card.dataset.id=u.id;
+      card.innerHTML='<div class="kb-card-top"><span class="kb-card-name">'+u.name+od+'</span>'
+        +'<span class="kb-card-score" style="background:'+scoreBg(sc)+';color:'+scoreColor(sc)+';border:1px solid '+scoreBorder(sc)+';">'+sc+'</span></div>'
+        +'<div class="kb-card-city">'+u.city+'</div>'
+        +'<div class="kb-card-tags">'+cats+'</div>'
+        +'<div class="kb-card-foot"><span class="kb-card-prio">'+p.label+'</span>'
+        +'<button class="kb-open-btn" onclick="openDb('+u.id+')">Dashboard →</button></div>';
+      card.addEventListener('dragstart',function(e){kbDragStart(e,u.id);});
+      card.addEventListener('dragend',function(){kbDragEnd();});
+      body.appendChild(card);
+    });
+  });
+}
+
+var _kbDragId=null;
+function kbDragStart(e,id){
+  _kbDragId=id; e.dataTransfer.effectAllowed='move';
+  setTimeout(function(){var c=document.querySelector('[data-id="'+id+'"]');if(c)c.classList.add('dragging');},0);
+}
+function kbDragEnd(){
+  document.querySelectorAll('.kb-card').forEach(function(c){c.classList.remove('dragging');});
+  document.querySelectorAll('.kb-col-body').forEach(function(b){b.classList.remove('drag-over-body');});
+  _kbDragId=null;
+}
+function kbDragOver(e){
+  e.preventDefault(); e.dataTransfer.dropEffect='move';
+  var body=e.currentTarget; body.classList.add('drag-over-body');
+}
+function kbDrop(e,rel){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over-body');
+  if(!_kbDragId) return;
+  var u=UNIS.find(function(x){return x.id===_kbDragId;});
+  if(u&&u.relStatus!==rel){
+    u.relStatus=rel; saveData();
+    showToast('Status geändert: '+REL[rel].label,'success');
+    renderKanban();
+  }
+}
+
+/* ══ SCORE BREAKDOWN (in Dashboard) ════════════════════════════ */
+function scoreBreakdownHTML(u){
+  var passung=Math.min(40,(u.categories||[]).reduce(function(s,c){return s+(CAT_WEIGHTS[c]||0);},0));
+  var relPts={partner:30,coop:24,meeting:16,contacted:8,none:0};
+  var beziehung=relPts[u.relStatus||'none']||0;
+  var prioPts={main:20,watch:10,check:4};
+  var prio=prioPts[u.prio||'check']||4;
+  var profil=Math.round(profileScore(u)/100*10);
+  function row(lbl,val,max){
+    return '<div class="sb-row"><span class="sb-lbl">'+lbl+'</span>'
+      +'<div class="sb-bar-wrap"><div class="sb-bar-fill" style="width:'+Math.round(val/max*100)+'%"></div></div>'
+      +'<span class="sb-val">'+val+'/'+max+'</span></div>';
+  }
+  return '<div class="score-breakdown">'
+    +row('Passung',passung,40)+row('Beziehung',beziehung,30)
+    +row('Priorität',prio,20)+row('Profil',profil,10)+'</div>';
+}
+
+/* ══ AKTIVITÄTEN-LOG ════════════════════════════════════════════ */
+function toggleActForm(){
+  var form=document.getElementById('act-add-form');
+  var isOpen=form.classList.toggle('open');
+  if(isOpen){
+    var today=new Date().toISOString().split('T')[0];
+    document.getElementById('act-date').value=today;
+    document.getElementById('act-text').value='';
+    document.getElementById('act-text').focus();
+  }
+}
+function saveActivity(){
+  if(!currentId) return;
+  var date=document.getElementById('act-date').value;
+  var text=document.getElementById('act-text').value.trim();
+  if(!text){showToast('Bitte Text eingeben.','error');return;}
+  var u=UNIS.find(function(x){return x.id===currentId;});
+  if(!u)return;
+  if(!u.activities) u.activities=[];
+  u.activities.unshift({date:date||new Date().toISOString().split('T')[0],text:text});
+  saveData(); toggleActForm(); renderActivities(u);
+  showToast('Aktivität gespeichert.','success');
+}
+function renderActivities(u){
+  var el=document.getElementById('db-activities'); if(!el)return;
+  var acts=u.activities||[];
+  if(!acts.length){el.innerHTML='<div style="font-size:12px;color:var(--n300);font-style:italic;padding:8px 0;">Noch keine Aktivitäten erfasst.</div>';return;}
+  el.innerHTML=acts.map(function(a,i){
+    var d=a.date?new Date(a.date).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'}):'';
+    var isLast=i===acts.length-1;
+    return '<div class="act-entry">'
+      +'<div class="act-dot-wrap"><div class="act-dot"></div>'+(isLast?'':'<div class="act-line"></div>')+'</div>'
+      +'<div class="act-body"><div class="act-date">'+d+'</div><div class="act-text">'+a.text+'</div></div>'
+      +'</div>';
+  }).join('');
+}
+
+/* ══ INTERNER d&b BEREICH ════════════════════════════════════════ */
+function renderInternSection(u){
+  var sec=document.getElementById('db-intern-sec');
+  var el=document.getElementById('db-intern');
+  var hasIntern=u.internContact||u.internDept||u.budget||u.internNote;
+  if(!hasIntern){sec.style.display='none';return;}
+  sec.style.display='block';
+  function item(lbl,val){
+    var empty=!val||val==='';
+    return '<div class="intern-item"><div class="intern-lbl">'+lbl+'</div>'
+      +'<div class="intern-val'+(empty?' empty':'')+'">'+( empty?'–':val)+'</div></div>';
+  }
+  var budgetHTML=u.budget==='yes'?'<span class="budget-badge budget-yes">✓ Ja</span>'
+    :u.budget==='no'?'<span class="budget-badge budget-no">Nein</span>':'<span class="intern-val empty">–</span>';
+  el.innerHTML=item('Zuständig d&b',u.internContact)+item('Abteilung',u.internDept)
+    +'<div class="intern-item"><div class="intern-lbl">Budget</div>'+budgetHTML+'</div>'
+    +item('Potenzial',u.internNote);
+}
+
+/* ══ ZAHNRAD EXTRAS ══════════════════════════════════════════════ */
+function openScoreFormel(){
+  document.getElementById('settings-dd').classList.remove('open');
+  showSimpleModal('Score-Formel (0–100 Punkte)',
+    '<div style="font-family:Inter,sans-serif;display:flex;flex-direction:column;gap:12px;">'
+    +'<p style="font-size:12px;color:var(--n500);line-height:1.6;">Der Attraktivitätsscore bewertet jede Hochschule nach vier Kriterien:</p>'
+    +'<div style="display:flex;flex-direction:column;gap:8px;">'
+    +scoreFormelRow('Strategische Passung','0–40 Pkt.','Audio-Technik +12, Akustik +11, Audio-Forsch. +10, Ingenieurwesen +8, Innovation +7 …','#5B21B6')
+    +scoreFormelRow('Beziehungsreife','0–30 Pkt.','Partner 30 · Kooperation 24 · Gespräch 16 · Kontakt 8 · Kein Kontakt 0','#059669')
+    +scoreFormelRow('Priorität','0–20 Pkt.','Hauptziel 20 · Beobachten 10 · Prüfen 4','#D97706')
+    +scoreFormelRow('Profilvollständigkeit','0–10 Pkt.','Anteil ausgefüllter Pflichtfelder × 10','#2563EB')
+    +'</div>'
+    +'<p style="font-size:11px;color:var(--n400);border-top:1px solid var(--n100);padding-top:10px;margin-top:4px;">Höchstmöglicher Score: 100. Empfehlung: ≥ 60 = hohe Priorität, ≥ 80 = Top-Kandidat.</p>'
+    +'</div>');
+}
+function scoreFormelRow(title,pts,desc,color){
+  return '<div style="background:var(--n50);border:1px solid var(--n200);border-left:3px solid '+color+';border-radius:8px;padding:10px 12px;">'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'
+    +'<span style="font-size:12px;font-weight:700;color:var(--n900);">'+title+'</span>'
+    +'<span style="font-size:11px;font-weight:800;color:'+color+';">'+pts+'</span></div>'
+    +'<span style="font-size:11px;color:var(--n500);">'+desc+'</span></div>';
+}
+function shareViaURL(){
+  document.getElementById('settings-dd').classList.remove('open');
+  try{
+    var data=btoa(unescape(encodeURIComponent(JSON.stringify(UNIS))));
+    var url=location.href.split('#')[0]+'#data='+data;
+    navigator.clipboard.writeText(url).then(function(){
+      showToast('Link in Zwischenablage kopiert!','success');
+    }).catch(function(){
+      prompt('Share-Link (manuell kopieren):',url);
+    });
+  }catch(e){showToast('Link konnte nicht generiert werden.','error');}
+}
+function printDashboard(){
+  document.getElementById('settings-dd').classList.remove('open');
+  if(!currentId){showToast('Bitte zuerst ein Hochschul-Dashboard öffnen.','error');return;}
+  window.print();
+}
+
+/* ══ SHARE-LINK IMPORT ON LOAD ══════════════════════════════════ */
+function checkShareLink(){
+  var hash=location.hash;
+  if(hash&&hash.startsWith('#data=')){
+    try{
+      var data=JSON.parse(decodeURIComponent(escape(atob(hash.slice(6)))));
+      if(Array.isArray(data)&&data.length){
+        showConfirm('Geteilte Daten laden','Sollen die '+data.length+' Hochschulen aus dem Link geladen werden? (Lokale Daten werden überschrieben)','Laden','primary',function(){
+          UNIS=data; saveData();
+          clusterGroup.clearLayers(); markerMap={};
+          clusterGroup.addLayers(UNIS.map(function(u){return addMarker(u);}));
+          applyFilter(); showToast(data.length+' Hochschulen geladen.','success');
+          history.replaceState(null,'',location.pathname);
+        });
+      }
+    }catch(e){}
+  }
+}
+
+/* ══ MAP + CLUSTER INIT ═════════════════════════════════════════ */
+function initMap() {
+  var worldBounds = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
+  map=L.map('map',{
+    zoomControl:false,
+    scrollWheelZoom:true,
+    maxBounds:worldBounds,
+    maxBoundsViscosity:0.85,   // etwas weicher als 1.0 → flüssigeres Panning am Rand
+    inertia:true,
+    inertiaDeceleration:2500,  // sanfteres Auslaufen nach Drag
+    inertiaMaxSpeed:1200,
+    zoomSnap:0.25,             // feinere Zoom-Stufen → weichere Übergänge
+    zoomDelta:0.5,
+    wheelDebounceTime:60,      // schnellere Wheel-Reaktion (Default: 40)
+    wheelPxPerZoomLevel:80     // weniger Pixel pro Zoom-Level → präziser
+  }).setView([50,15],4);
+  L.control.zoom({position:'bottomleft'}).addTo(map);
+  map.on('movestart zoomstart', ()=>hideHoverCard(0));
+  tileLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19, noWrap:true,
+    keepBuffer:4,              // mehr Kacheln im Buffer → weniger Grau-Fläche beim Panning
+    updateWhenIdle:false,      // Kacheln werden schon während des Pannens geladen
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+
+  clusterGroup=L.markerClusterGroup({
+    iconCreateFunction: function(cluster){
+      var n=cluster.getChildCount();
+      var sz=n<10?38:n<30?44:50, h=sz/2;
+      return L.divIcon({
+        html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:#5B21B6;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;font-size:'+(n>99?11:13)+'px;font-weight:800;box-shadow:0 0 0 5px rgba(91,33,182,0.22),0 4px 14px rgba(91,33,182,0.35);border:3px solid rgba(255,255,255,0.9);">'+n+'</div>',
+        iconSize:[sz,sz], iconAnchor:[h,h], className:''
+      });
+    },
+    spiderfyOnMaxZoom:true,
+    showCoverageOnHover:false,
+    zoomToBoundsOnClick:true,
+    maxClusterRadius:60,
+    animate:true,
+    animateAddingMarkers:false
+  });
+
+  map.addLayer(clusterGroup);
+  /* Batch-add aller Marker auf einmal → deutlich schneller als einzelne addLayer() */
+  clusterGroup.addLayers(UNIS.map(u=>addMarker(u)));
+  applyFilter();
+}
+
+/* ══ ONBOARDING ═════════════════════════════════════════════════ */
+function openOnboarding() {
+  document.getElementById('settings-dd').classList.remove('open');
+  document.getElementById('onboarding-overlay').classList.add('open');
+}
+function closeOnboarding() {
+  document.getElementById('onboarding-overlay').classList.remove('open');
+}
+
+/* ══ KEYBOARD SHORTCUTS ═════════════════════════════════════════ */
+document.addEventListener('keydown', e=>{
+  /* Kein Shortcut wenn in einem Eingabefeld */
+  var tag=(e.target.tagName||'').toLowerCase();
+  var inInput=tag==='input'||tag==='textarea'||tag==='select';
+
+  if(e.key==='Escape'){
+    if(document.getElementById('simple-modal-overlay')) { document.getElementById('simple-modal-overlay').remove(); return; }
+    if(document.getElementById('confirm-overlay').classList.contains('open')){ closeConfirm(); return; }
+    if(document.getElementById('onboarding-overlay').classList.contains('open')){ closeOnboarding(); return; }
+    if(document.getElementById('db-overlay').classList.contains('open')) { closeDb(); return; }
+    if(document.getElementById('m-overlay').classList.contains('open'))  { closeModal(); return; }
+    if(kanbanOpen) { toggleKanban(); return; }
+    if(listOpen) { toggleList(); return; }
+  }
+  if(inInput) return; /* Shortcuts nur außerhalb von Eingabefeldern */
+
+  if((e.key==='f'||e.key==='F')&&(e.ctrlKey||e.metaKey)){
+    e.preventDefault(); document.getElementById('search-input').focus(); return;
+  }
+  if(e.key==='n'||e.key==='N'){ e.preventDefault(); openModal(); return; }
+  if(e.key==='e'||e.key==='E'){
+    if(currentId){ e.preventDefault(); editCurrent(); } return;
+  }
+  if(e.key==='k'||e.key==='K'){ e.preventDefault(); toggleKanban(); return; }
+  if(e.key==='l'||e.key==='L'){ e.preventDefault(); toggleList(); return; }
+  if(e.key==='p'||e.key==='P'){ e.preventDefault(); printDashboard(); return; }
+});
+
+/* ══ BOOT ═══════════════════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  buildFilterPanel(); buildCatTree(); initData(); initMap(); checkShareLink();
+
+  /* Search with debounce + highlight */
+  var searchTimeout;
+  document.getElementById('search-input').addEventListener('input', e=>{
+    filter.search=e.target.value;
+    document.getElementById('search-clear').classList.toggle('visible',!!e.target.value);
+    clearTimeout(searchTimeout);
+    searchTimeout=setTimeout(()=>applyFilter(true),200);
+    updateResetBtn();
+  });
+
+  document.getElementById('region-sel').addEventListener('change', e=>{
+    filter.region=e.target.value; applyFilter(); updateResetBtn();
+    /* Zur Region fliegen */
+    if(filter.region!=='all' && REGION_BOUNDS[filter.region]) {
+      map.flyToBounds(REGION_BOUNDS[filter.region], {
+        padding:[60,60], maxZoom:6, duration:1.2
+      });
+    } else {
+      /* "Alle Regionen" → Weltansicht */
+      map.flyTo([48, 14], 4, {duration:1.0});
+    }
+  });
+
+  document.querySelectorAll('.pp').forEach(btn=>btn.addEventListener('click',function(){
+    document.querySelectorAll('.pp').forEach(b=>b.classList.remove('on'));
+    this.classList.add('on'); filter.prio=this.dataset.prio; applyFilter(); updateResetBtn();
+  }));
+
+  document.querySelectorAll('.rp').forEach(btn=>btn.addEventListener('click',function(){
+    document.querySelectorAll('.rp').forEach(b=>b.classList.remove('on'));
+    this.classList.add('on'); filter.relStatus=this.dataset.rel; applyFilter(); updateResetBtn();
+  }));
+
+  document.getElementById('settings-btn').addEventListener('click',e=>{
+    e.stopPropagation(); document.getElementById('settings-dd').classList.toggle('open');
+  });
+  document.addEventListener('click',()=>document.getElementById('settings-dd').classList.remove('open'));
+});
+</script>
+</body>
+</html>
